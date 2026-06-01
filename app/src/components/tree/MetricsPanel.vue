@@ -34,7 +34,7 @@ defineProps<Props>()
     <div class="metrics-group">
         <h4>{{ activeTab === 'huffman' ? 'Эффективность Хаффмана' : 'Эффективность Шеннона-Фано' }}</h4>
         <div class="formulas-row">
-            <span class="formula-item">M = {{ activeTab === 'huffman' ? store.huffman?.expectedLength : store.shannonFano?.expectedLength  }}</span>
+            <span class="formula-item">M = {{ activeTab === 'huffman' ? store.huffman?.expectedLength?.toFixed(4) : store.shannonFano?.expectedLength?.toFixed(4)  }}</span>
         </div>
       <div class="formula mono">
         {{ activeTab === 'huffman' ? store.huffmanMeanFormula : store.shannonMeanFormula }}
