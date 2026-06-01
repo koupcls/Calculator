@@ -18,7 +18,7 @@ import {
 
 import { HuffmanTree } from '../core/trees/HuffmanTree'
 import { ShanonFanoTree } from '../core/trees/ShanonFanoTree'
-import type { CodingState, TreeData, MetricsData } from '../core/trees/storeTypes'
+import type { CodingState } from '../core/trees/storeTypes'
 
 export const useTreeStore = defineStore('tree-coding', {
   state: (): CodingState => ({

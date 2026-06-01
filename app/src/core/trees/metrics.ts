@@ -14,7 +14,7 @@ export function calculateEntropy(inputLength: number, frequencies: Record<string
     if (inputLength <= 0) return 0;
 
     let entropy = 0;
-    for (const [symbol, count] of Object.entries(frequencies)) {
+    for (const [_, count] of Object.entries(frequencies)) {
         const p = count / inputLength;
         entropy -= p * Math.log2(p);
     }

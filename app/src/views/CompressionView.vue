@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useCompressionStore } from '../stores/compressionStore.ts'
 import type { CompressionAlgorithm } from '../stores/compressionStore'
 import Textarea from '../components/ui/Textarea.vue'

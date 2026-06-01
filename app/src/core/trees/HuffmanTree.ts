@@ -5,7 +5,7 @@ import { TreePriorityQueue as PriorityQueue } from "../utils/PriorityQueue";
 
 export class HuffmanTree extends Tree {
 
-    protected buildTree(root: TreeNode, frequencies: [string, number][]): void {
+    protected buildTree(_root: TreeNode, frequencies: [string, number][]): void {
         const queue = new PriorityQueue()
 
         for (const [symbol, count] of frequencies) {

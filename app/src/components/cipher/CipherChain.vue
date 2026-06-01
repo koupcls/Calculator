@@ -40,16 +40,6 @@ const addStep = () => {
   store.runStep(stepId);
 };
 
-const runChain = async () => {
-  if (store.steps.length === 0) return;
-  
-  if (store.steps[0]) {
-    store.steps[0].input = initialText.value;
-  }
-  
-  await store.runAll();
-};
-
 const getStepLabel = (step: any) => {
   const icon = step.mode === 'encrypt' ? '' : '';
   const name = step.type === 'vigenere' ? 'Виженер' : 'Перестановка';
@@ -61,7 +51,7 @@ const finalOutput = computed(() =>
 );
 
 // Хелпер для визуализации: порядок столбца (1-based)
-const getColumnOrder = (key: string, sortedOrder: number[], colIndex: number): number => {
+const getColumnOrder = (sortedOrder: number[], colIndex: number): number => {
   return sortedOrder.indexOf(colIndex) + 1;
 };
 </script>
@@ -137,7 +127,7 @@ const getColumnOrder = (key: string, sortedOrder: number[], colIndex: number): n
             class="table-row"
             >
             <div class="cell order-cell">
-                {{ getColumnOrder(step.key, step.visualization!.sortedOrder, colIdx) }}
+                {{ getColumnOrder(step.visualization!.sortedOrder, colIdx) }}
             </div>
             <div class="cell key-cell">
                 {{ keyChar === ' ' ? '_' : keyChar }}
