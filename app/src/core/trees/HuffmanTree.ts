@@ -1,0 +1,38 @@
+import { Tree } from "./Tree";
+import type { TreeNode } from "./types";
+import { TreePriorityQueue as PriorityQueue } from "../utils/PriorityQueue";
+
+
+export class HuffmanTree extends Tree {
+
+    protected buildTree(root: TreeNode, frequencies: [string, number][]): void {
+        const queue = new PriorityQueue()
+
+        for (const [symbol, count] of frequencies) {
+            const node: TreeNode = {
+                code: '',
+                symbols: symbol,
+                left: null,
+                right: null
+            }
+
+            queue.add({node: node, weight: count })
+        }
+
+        while (queue.size !== 1) {
+            const first = queue.poll()!
+            const second = queue.poll()!
+
+            const parentNode: TreeNode = {
+                code: '',
+                symbols: first.node.symbols + second.node.symbols, 
+                left: first.node,
+                right: second.node
+            };
+
+            queue.add({node: parentNode, weight: first?.weight + second?.weight})
+        }
+
+        this.root = queue.poll()!.node
+    }
+}
