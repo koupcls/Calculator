@@ -23,14 +23,19 @@ export function vigenereCipher(
     const keyChar = key[keyIndex % key.length];
     const keyIdx = alphabet.indexOf(keyChar);
 
-    if (keyIdx !== -1) {
-      const shift = mode === 'encrypt' ? keyIdx : -keyIdx;
-      const newIdx = (charIdx + shift + len) % len;
-      result += alphabet[newIdx];
+    if (keyIdx === -1) {
       keyIndex++;
-    } else {
       result += char;
+      continue;
     }
+
+    const shift = keyIdx + 1;
+    const signedShift = mode === 'encrypt' ? shift : -shift;
+    
+    const newIdx = ((charIdx + signedShift) % len + len) % len;
+    
+    result += alphabet[newIdx];
+    keyIndex++;
   }
   return result;
 }

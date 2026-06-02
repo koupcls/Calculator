@@ -10,8 +10,8 @@ export interface CipherStep {
   output: string | null;
   isLoading: boolean;
   error: string | null;
-  // Для визуализации колонной перестановки
   visualization?: ColumnarVisualization;
+  alphabet?: string;
 }
 
 export interface ColumnarVisualization {
