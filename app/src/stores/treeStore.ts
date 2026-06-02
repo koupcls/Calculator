@@ -7,15 +7,13 @@ import {
   calculateRelativeRedundancy,
   calculateMean
 } from '../core/trees/metrics'
-
 import {
-    formatEntropyFormula, 
-    formatMaxEntropyFormula, 
-    formatMeanFormula, 
-    formatRedundancyFormula, 
-    formatRelativeRedundancyFormula
+  formatEntropyFormula, 
+  formatMaxEntropyFormula, 
+  formatMeanFormula, 
+  formatRedundancyFormula, 
+  formatRelativeRedundancyFormula
 } from '../core/utils/formatters'
-
 import { HuffmanTree } from '../core/trees/HuffmanTree'
 import { ShanonFanoTree } from '../core/trees/ShanonFanoTree'
 import type { CodingState } from '../core/trees/storeTypes'
@@ -23,6 +21,7 @@ import type { CodingState } from '../core/trees/storeTypes'
 export const useTreeStore = defineStore('tree-coding', {
   state: (): CodingState => ({
     input: '',
+    caseSensitive: false,
     frequencies: {},
     metrics: null,
     huffman: null,
@@ -31,28 +30,18 @@ export const useTreeStore = defineStore('tree-coding', {
     error: null
   }),
 
- getters: {
+  getters: {
     isAnalyzed: (state): boolean => !!state.metrics && !!state.huffman,
     redundancyPercent: (state): string => 
       state.metrics ? (state.metrics.r0 * 100).toFixed(2) + '%' : '—',
-    
-    // Формулы метрик
     entropyFormula: (state): string => 
-      state.metrics 
-        ? formatEntropyFormula(state.frequencies, state.metrics.n) 
-        : '',
+      state.metrics ? formatEntropyFormula(state.frequencies, state.metrics.n) : '',
     maxEntropyFormula: (state): string => 
       state.metrics ? formatMaxEntropyFormula(state.metrics.m) : '',
     redundancyFormula: (state): string => 
-      state.metrics 
-        ? formatRedundancyFormula(state.metrics.entropy, state.metrics.H_max) 
-        : '',
+      state.metrics ? formatRedundancyFormula(state.metrics.entropy, state.metrics.H_max) : '',
     relativeRedundancyFormula: (state): string => 
-      state.metrics 
-        ? formatRelativeRedundancyFormula(state.metrics.entropy, state.metrics.H_max) 
-        : '',
-    
-    // Формулы мат. ожидания
+      state.metrics ? formatRelativeRedundancyFormula(state.metrics.entropy, state.metrics.H_max) : '',
     huffmanMeanFormula: (state): string => 
       state.huffman && state.metrics
         ? formatMeanFormula(state.huffman.codes, state.frequencies, state.metrics.n)
@@ -64,7 +53,6 @@ export const useTreeStore = defineStore('tree-coding', {
   },
 
   actions: {
-
     async analyze(input: string) {
       if (!input || input.trim() === '') {
         this.error = 'Введите непустую строку'
@@ -75,18 +63,15 @@ export const useTreeStore = defineStore('tree-coding', {
       this.error = null
 
       try {
+        const processedInput = this.caseSensitive === true ? input : input.toLowerCase()
         this.input = input
-        const freqs = calculateFrequencies(input)
+        const freqs = calculateFrequencies(processedInput)
         this.frequencies = freqs
 
-        const n = input.length
+        const n = processedInput.length
         const m = Object.entries(freqs).length
-
-        const inputLength = input.length
-        const alphabetSize = Object.keys(freqs).length
-        
-        const entropy = calculateEntropy(inputLength, freqs)
-        const H_max = calculateMaxEntropy(alphabetSize)
+        const entropy = calculateEntropy(n, freqs)
+        const H_max = calculateMaxEntropy(m)
         const R = calculateAbsoluteRedundancy(entropy, H_max)
         const r0 = calculateRelativeRedundancy(entropy, H_max)
 
@@ -94,25 +79,23 @@ export const useTreeStore = defineStore('tree-coding', {
 
         const huffmanTree = new HuffmanTree(freqs)
         const codes = huffmanTree.toMap()
-        const expectedLength = calculateMean(inputLength, codes, freqs)
-        const treeJson = huffmanTree.toJson()
+        const expectedLength = calculateMean(n, codes, freqs)
 
         this.huffman = {
           expectedLength,
           codes,
-          treeJson
+          treeJson: huffmanTree.toJson()
         }
 
         const sfTree = new ShanonFanoTree(freqs)
         const sfCodes = sfTree.toMap()
-        const sfExpected = calculateMean(inputLength, sfCodes, freqs)
+        const sfExpected = calculateMean(n, sfCodes, freqs)
 
         this.shannonFano = {
           expectedLength: sfExpected,
           codes: sfCodes,
           treeJson: sfTree.toJson()
         }
-
       } catch (err) {
         console.error('Analysis error:', err)
         this.error = err instanceof Error ? err.message : 'Неизвестная ошибка'

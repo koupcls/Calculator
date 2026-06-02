@@ -8,7 +8,7 @@ export interface TreeData {
 
 export interface MetricsData {
   entropy: number             // H
-  H_max: number              // H₀ (макс. энтропия)
+  H_max: number              // H0 (макс. энтропия)
   R: number                  // Абсолютная избыточность
   r0: number                 // Относительная эффективность
   n: number                  // Длина входа
@@ -17,6 +17,7 @@ export interface MetricsData {
 
 export interface CodingState {
   input: string
+  caseSensitive: boolean,
   frequencies: Frequencies
   metrics: MetricsData | null
   huffman: TreeData | null
