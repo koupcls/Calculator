@@ -1,5 +1,4 @@
 :root {
-  /* Светлая тема (по умолчанию) */
   --color-bg: #ffffff;
   --color-bg-secondary: #f8fafc;
   --color-bg-tertiary: #f1f5f9;
@@ -14,25 +13,22 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   
-  /* Размеры и отступы */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   
-  /* Шрифты */
   --font-sans: system-ui, -apple-system, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', monospace;
   
-  /* Тени */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   
-  /* Анимации */
   --transition: 0.2s ease;
 }
 
@@ -52,7 +48,6 @@
   --color-error: #ed4245;
 }
 
-/* Глобальный сброс и базовые стили */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -67,6 +62,7 @@ html, body {
   color: var(--color-text);
   background: var(--color-bg);
   transition: background var(--transition), color var(--transition);
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -75,7 +71,6 @@ body {
   margin: 0 auto;
 }
 
-/* Утилиты */
 .mono { font-family: var(--font-mono); }
 .text-center { text-align: center; }
 .text-muted { color: var(--color-text-muted); }
@@ -88,4 +83,87 @@ body {
 @media (min-width: 768px) {
   .hidden-mobile { display: block; }
   .hidden-desktop { display: none; }
+}
+
+@media (max-width: 768px) {
+  body { padding: var(--spacing-md); }
+  
+  .app-main, .cipher-page, .compression-container, .page,
+  .step-card, .initial-input-section, .final-output, .alphabet-editor,
+  .input-section, .add-step-form, .metrics-panel,
+  .columnar-viz, .columnar-viz-rotated, .lz77-container {
+    padding: var(--spacing-sm) !important;
+  }
+  
+  .compression-table, .lz77-table, .base-dynamic-table { font-size: 12px; }
+  
+  .compression-table th, .compression-table td,
+  .lz77-table th, .lz77-table td { padding: 6px 8px !important; }
+  
+  .btn--md { padding: 6px 12px; font-size: 13px; }
+  
+  .char-input { flex: 0 0 50px; font-size: 16px; padding: 6px; }
+  .add-btn { padding: 6px 12px; font-size: 13px; }
+  
+  .alphabet-tile, .plus-tile { width: 42px; height: 56px; }
+  .tile-symbol { font-size: 18px; }
+  .tile-index { font-size: 9px; }
+}
+
+@media (max-width: 480px) {
+  body { padding: var(--spacing-sm); }
+  .app-main { padding: var(--spacing-sm); }
+}
+
+@media (max-width: 360px) {
+  .alphabet-tile, .plus-tile { width: 38px; height: 52px; }
+  .tile-symbol { font-size: 16px; }
+  .nav-tab { padding: 4px 6px; font-size: 11px; }
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) var(--color-bg-tertiary);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-hover);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
 }
