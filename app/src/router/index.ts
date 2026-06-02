@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import TreesView from '../views/TreesView.vue';
 import CipherView from '../views/CipherView.vue';
-import CompressionView from '../views/CompressionView.vue';
+import MaintenanceView from '../views/MaintenanceView.vue';
 
 export const router = createRouter({
   history: createWebHistory('/Calculator/'),
@@ -25,7 +25,7 @@ export const router = createRouter({
     {
       path: '/compression',
       name: 'compression',
-      component: CompressionView,
+      component: MaintenanceView,
       meta: { title: 'Сжатие' }
     }
   ]
