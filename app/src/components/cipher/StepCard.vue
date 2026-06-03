@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CipherType, CipherMode } from '../../core/cipher/storeTypes'
 import VigenereTable from './VigenereTable.vue'
+import Tile from '../ui/Tile.vue'
 
 interface Step {
   id: string
@@ -83,11 +84,15 @@ const getColumnOrder = (sorted: number[], idx: number) => sorted.indexOf(idx) + 
         <div v-for="(keyChar, colIdx) in step.key.split('')" :key="colIdx" class="viz-row">
           <span class="viz-order">{{ getColumnOrder(step.visualization.sortedOrder, colIdx) }}</span>
           <span class="viz-key">{{ keyChar === ' ' ? '_' : keyChar }}</span>
-          <span class="viz-symbols">
-            <span v-for="(row, rowIdx) in step.visualization.table" :key="rowIdx" class="viz-symbol" :class="{ filled: row[colIdx] }">
-              {{ row[colIdx] === ' ' ? '_' : (row[colIdx] || '') }}
-            </span>
-          </span>
+          <div class="viz-symbols">
+            <Tile
+              v-for="(row, rowIdx) in step.visualization.table"
+              :key="rowIdx"
+              :symbol="row[colIdx] === ' ' ? '_' : (row[colIdx] || '')"
+              :index="Number(rowIdx) + 1"
+              :showNumber="false"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -306,26 +311,6 @@ const getColumnOrder = (sorted: number[], idx: number) => sorted.indexOf(idx) + 
   border-radius: var(--radius-sm);
   overflow-x: auto;
   min-height: 36px;
-}
-.viz-symbol {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 4px;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-.viz-symbol.filled {
-  background: var(--color-bg-secondary);
-  border-color: var(--color-border);
-  color: var(--color-text);
-  font-weight: 500;
 }
 
 @media (max-width: 900px) {

@@ -163,7 +163,7 @@ const navigate = (path: string) => router.push(path)
 
 @media (max-width: 480px) {
   .app-header {
-    margin: 0 var(--spacing-sm);
+    margin: 2 var(--spacing-sm);
   }
   
   .header-content {
@@ -171,7 +171,7 @@ const navigate = (path: string) => router.push(path)
   }
 
   .app-title {
-    font-size: 16px;
+    font-size: 10px;
   }
 
   .app-nav {
@@ -179,8 +179,8 @@ const navigate = (path: string) => router.push(path)
   }
 
   .nav-tab {
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: 5px 8px;
+    font-size: 9px;
   }
 }
 </style>

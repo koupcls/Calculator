@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import AlphabetTile from './AlphabetTile.vue'
 
 const DEFAULT_ALPHABET = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя -'
@@ -13,10 +13,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void 
 }>()
 
-const editing = ref(false)
 const focusedIndex = ref<number | null>(null)
-const tempChar = ref('')
-const inputRef = ref<HTMLInputElement>()
 
 const alphabetChars = computed(() => {
   const seen = new Set<string>()
@@ -28,26 +25,12 @@ const alphabetChars = computed(() => {
 })
 
 const plusIndex = computed(() => alphabetChars.value.length)
-const isValidChar = (char: string) => char.length === 1 && !props.modelValue.includes(char)
+const isValidChar = (char: string) => char.length === 1 && !props.modelValue.includes(char.toLowerCase())
 
-const startAdding = () => {
-  editing.value = true
-  tempChar.value = ''
-  focusedIndex.value = plusIndex.value
-  nextTick(() => inputRef.value?.focus())
-}
-
-const confirmAdd = () => {
-  if (isValidChar(tempChar.value)) {
-    emit('update:modelValue', props.modelValue + tempChar.value)
-    tempChar.value = ''
-    nextTick(() => inputRef.value?.focus())
+const handleAddChar = (char: string) => {
+  if (isValidChar(char)) {
+    emit('update:modelValue', props.modelValue + char.toLowerCase())
   }
-}
-
-const cancelAdd = () => {
-  editing.value = false
-  tempChar.value = ''
 }
 
 const removeChar = (index: number) => {
@@ -72,49 +55,19 @@ const resetAlphabet = () => {
   emit('update:modelValue', props.defaultAlphabet || DEFAULT_ALPHABET)
 }
 
-const handleKeydown = (e: KeyboardEvent) => {
-  if (editing.value) {
-    if (e.key === 'Escape') {
-      e.preventDefault()
-      cancelAdd()
-    }
-    return
-  }
-
-  const max = plusIndex.value
-  
-  switch (e.key) {
-    case 'ArrowRight':
-      e.preventDefault()
-      focusedIndex.value = focusedIndex.value === null ? 0 : Math.min(focusedIndex.value + 1, max)
-      break
-    case 'ArrowLeft':
-      e.preventDefault()
-      focusedIndex.value = focusedIndex.value === null ? max : Math.max(focusedIndex.value - 1, 0)
-      break
-    case 'Backspace':
-    case 'Delete':
-      e.preventDefault()
-      if (focusedIndex.value !== null && focusedIndex.value >= 0 && focusedIndex.value < alphabetChars.value.length) {
-        removeChar(focusedIndex.value)
-      }
-      break
-    case 'Enter':
-    case ' ':
-      e.preventDefault()
-      if (focusedIndex.value === plusIndex.value) {
-        startAdding()
-      } else if (focusedIndex.value !== null && focusedIndex.value >= 0) {
-        removeChar(focusedIndex.value)
-      }
-      break
+const handleTileClick = (index: number) => {
+  if (focusedIndex.value === index) {
+    removeChar(index)
+  } else {
+    focusedIndex.value = index
   }
 }
 
-const isFocused = (index: number) => focusedIndex.value === index
 const handleFocus = () => {
   if (focusedIndex.value === null) focusedIndex.value = plusIndex.value
 }
+
+const isFocused = (index: number) => focusedIndex.value === index
 
 const isDefault = computed(() => {
   const defaultAlphabet = props.defaultAlphabet || DEFAULT_ALPHABET
@@ -127,7 +80,6 @@ const isDefault = computed(() => {
     class="alphabet-editor" 
     tabindex="0"
     @focus="handleFocus"
-    @keydown="handleKeydown"
     @blur="focusedIndex = null"
   >
     <!-- 🔹 Центрируем тайлы по горизонтали -->
@@ -140,32 +92,16 @@ const isDefault = computed(() => {
         :focused="isFocused(idx)"
         removable
         @remove="removeChar(idx)"
-        @click="focusedIndex = idx"
+        @click="handleTileClick(idx)"
       />
       
-      <button
-        class="plus-tile tile"
-        :class="{ focused: isFocused(plusIndex), editing }"
-        @click="!editing ? startAdding() : null"
-        tabindex="-1"
-        type="button"
-      >
-        <span class="tile-symbol plus-symbol">+</span>
-        <span class="tile-index">{{ alphabetChars.length + 1 }}</span>
-        
-        <input
-          v-if="editing"
-          ref="inputRef"
-          v-model="tempChar"
-          type="text"
-          maxlength="1"
-          class="tile-input"
-          placeholder="?"
-          @keyup.enter="confirmAdd"
-          @keyup.escape="cancelAdd"
-          @blur="cancelAdd"
-        />
-      </button>
+      <!-- 🔹 Плюс-тайл -->
+      <AlphabetTile
+        :index="plusIndex"
+        :focused="isFocused(plusIndex)"
+        @add="handleAddChar"
+        @click="focusedIndex = plusIndex"
+      />
     </div>
 
     <div v-if="alphabetChars.length === 0" class="empty-hint">
@@ -216,85 +152,6 @@ const isDefault = computed(() => {
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) 0;
   justify-content: center;
-}
-
-/* 🔹 Плюс-тайл — стиль как у Tile.vue */
-.plus-tile {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 52px;
-  background: var(--color-bg-secondary);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-sm);
-  transition: all var(--transition);
-  cursor: pointer;
-  user-select: none;
-  padding: 0;
-}
-
-.plus-tile:hover {
-  border-style: solid;
-  border-color: var(--color-primary);
-  background: var(--color-bg-tertiary);
-  transform: translateY(-2px);
-}
-
-.plus-tile.focused {
-  border-style: solid;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
-}
-
-.plus-tile.editing {
-  border-style: solid;
-  border-color: var(--color-primary);
-  background: var(--color-bg-tertiary);
-}
-
-.plus-symbol {
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  line-height: 1;
-  transition: color var(--transition);
-}
-
-.plus-tile:hover .plus-symbol {
-  color: var(--color-primary);
-}
-
-.tile-index {
-  font-family: var(--font-sans);
-  font-size: 9px;
-  color: var(--color-text-muted);
-  margin-top: 2px;
-  font-weight: 500;
-}
-
-.tile-input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  text-align: center;
-  background: var(--color-bg-tertiary);
-  border: none;
-  outline: none;
-  color: var(--color-text);
-  border-radius: var(--radius-sm);
-  z-index: 1;
-}
-
-.tile-input::placeholder {
-  color: var(--color-text-muted);
-  opacity: 0.6;
 }
 
 .empty-hint {
@@ -374,19 +231,6 @@ const isDefault = computed(() => {
 
 /* 🔹 Адаптивность */
 @media (max-width: 768px) {
-  .plus-tile {
-    width: 36px;
-    height: 48px;
-  }
-  
-  .plus-symbol {
-    font-size: 14px;
-  }
-  
-  .tile-index {
-    font-size: 8px;
-  }
-  
   .editor-info {
     flex-direction: column;
     align-items: flex-start;

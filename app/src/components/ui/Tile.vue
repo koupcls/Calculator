@@ -5,17 +5,20 @@ const props = defineProps<{
   symbol: string
   index: number
   highlight?: boolean
+  showNumber?: boolean
 }>()
 
-const displaySymbol = computed(() => 
+const displaySymbol = computed(() =>
   props.symbol === ' ' ? '_' : props.symbol
 )
+
+const shouldShowNumber = computed(() => props.showNumber !== false)
 </script>
 
 <template>
-  <div class="tile" :class="{ highlighted: highlight }">
+  <div class="tile" :class="{ highlighted: highlight, 'square': !shouldShowNumber }">
     <span class="tile-symbol">{{ displaySymbol }}</span>
-    <span class="tile-index">{{ index }}</span>
+    <span v-if="shouldShowNumber" class="tile-index">{{ index }}</span>
   </div>
 </template>
 
@@ -31,6 +34,10 @@ const displaySymbol = computed(() =>
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   transition: all var(--transition);
+}
+
+.tile.square {
+  height: 40px; /* Квадратный */
 }
 
 .tile.highlighted {
