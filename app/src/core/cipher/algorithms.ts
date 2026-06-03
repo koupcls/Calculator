@@ -1,3 +1,5 @@
+import type { ColumnarVisualization } from "./storeTypes";
+
 export type CipherMode = 'encrypt' | 'decrypt';
 
 export function vigenereCipher(
@@ -40,29 +42,42 @@ export function vigenereCipher(
   return result;
 }
 
+export interface ColumnarOutput {
+  result: string;
+  visualization: ColumnarVisualization;
+}
+
 export function columnarTransposition(
   text: string,
   key: string,
   alphabet: string,
   mode: CipherMode = 'encrypt'
-): string {
+): ColumnarOutput {
   if (!key) throw new Error('Key cannot be empty');
 
   const keyLength = key.length;
   const keyIndices = Array.from({ length: keyLength }, (_, i) => i);
-  
+
   keyIndices.sort((a, b) => {
     const idxA = alphabet.indexOf(key[a]);
     const idxB = alphabet.indexOf(key[b]);
     return idxA === idxB ? a - b : idxA - idxB;
   });
 
-  return mode === 'encrypt'
+  const data = mode === 'encrypt'
     ? encryptColumnar(text, keyLength, keyIndices)
     : decryptColumnar(text, keyLength, keyIndices);
+
+  return {
+    result: data?.result!,
+    visualization: {
+      table: data?.table!,
+      sortedOrder: keyIndices
+    }
+  };
 }
 
-function encryptColumnar(text: string, keyLength: number, sortedIndices: number[]): string {
+function encryptColumnar(text: string, keyLength: number, sortedIndices: number[]) {
   const numRows = Math.ceil(text.length / keyLength);
   const table: string[][] = Array.from({ length: numRows }, () => Array(keyLength).fill(''));
 
@@ -76,34 +91,41 @@ function encryptColumnar(text: string, keyLength: number, sortedIndices: number[
       if (table[row][colIdx]) result += table[row][colIdx];
     }
   }
-  return result;
+
+  return { result, table };
 }
 
-function decryptColumnar(text: string, keyLength: number, sortedIndices: number[]): string {
-  const numRows = Math.ceil(text.length / keyLength);
-  const remainder = text.length % keyLength || keyLength;
+function decryptColumnar(text: string, keyLength: number, sortedIndices: number[]) {
+  const numRows = Math.trunc(text.length / keyLength);
+  const remainder = text.length % keyLength;
   
   const colLengths: number[] = Array(keyLength).fill(0);
   for (let i = 0; i < keyLength; i++) {
-    colLengths[sortedIndices[i]] = i < remainder ? numRows : numRows - 1;
+    if (remainder === 0) colLengths[i] = numRows;
+    else colLengths[i] = i < remainder ? numRows + 1 : numRows;
   }
 
-  const table: string[][] = Array.from({ length: numRows }, () => Array(keyLength).fill(''));
+  const maxRows = remainder === 0 ? numRows : numRows + 1;
+  const table: string[][] = Array.from({ length: maxRows }, () => Array(keyLength).fill(''));
   let textIndex = 0;
 
   for (const colIdx of sortedIndices) {
-    for (let row = 0; row < colLengths[colIdx]; row++) {
+    for (let rowIdx = 0; rowIdx < colLengths[colIdx]; rowIdx++) {
       if (textIndex < text.length) {
-        table[row][colIdx] = text[textIndex++];
+        table[rowIdx][colIdx] = text[textIndex++];
       }
     }
   }
 
   let result = '';
-  for (let row = 0; row < numRows; row++) {
+  for (let row = 0; row < maxRows; row++) {
     for (let col = 0; col < keyLength; col++) {
-      if (table[row][col]) result += table[row][col];
+      if (table[row][col] !== '') {
+        result += table[row][col];
+      }
     }
   }
-  return result;
+
+  return { result, table };
 }
+

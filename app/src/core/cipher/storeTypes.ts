@@ -15,11 +15,8 @@ export interface CipherStep {
 }
 
 export interface ColumnarVisualization {
-  keyIndices: number[];
-  sortedOrder: number[];
   table: string[][];
-  colLengths?: number[];
-  readOrder: 'columns' | 'rows';
+  sortedOrder: number[];
 }
 
 export interface CipherState {
