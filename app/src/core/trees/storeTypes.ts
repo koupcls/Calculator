@@ -1,9 +1,11 @@
 export type Frequencies = Record<string, number>
+export type Codes = Record<string, string>
 
 export interface TreeData {
   expectedLength: number      // Мат. ожидание
-  codes: Record<string, string> // Таблица кодов
+  codes: Codes                // Таблица кодов
   treeJson: string            // JSON дерева
+  codedLine: string           // Закодированная строка
 }
 
 export interface MetricsData {
@@ -21,7 +23,7 @@ export interface CodingState {
   frequencies: Frequencies
   metrics: MetricsData | null
   huffman: TreeData | null
-  shannonFano: TreeData | null  // резерв на будущее
+  shannonFano: TreeData | null
   isLoading: boolean
   error: string | null
 }

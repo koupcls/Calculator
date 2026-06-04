@@ -12,7 +12,8 @@ import {
   formatMaxEntropyFormula, 
   formatMeanFormula, 
   formatRedundancyFormula, 
-  formatRelativeRedundancyFormula
+  formatRelativeRedundancyFormula,
+  codeLine
 } from '../core/utils/formatters'
 import { HuffmanTree } from '../core/trees/HuffmanTree'
 import { ShanonFanoTree } from '../core/trees/ShanonFanoTree'
@@ -84,7 +85,8 @@ export const useTreeStore = defineStore('tree-coding', {
         this.huffman = {
           expectedLength,
           codes,
-          treeJson: huffmanTree.toJson()
+          treeJson: huffmanTree.toJson(),
+          codedLine: codeLine(input, codes)
         }
 
         const sfTree = new ShanonFanoTree(freqs)
@@ -94,7 +96,8 @@ export const useTreeStore = defineStore('tree-coding', {
         this.shannonFano = {
           expectedLength: sfExpected,
           codes: sfCodes,
-          treeJson: sfTree.toJson()
+          treeJson: sfTree.toJson(),
+          codedLine: codeLine(input, sfCodes)
         }
       } catch (err) {
         console.error('Analysis error:', err)

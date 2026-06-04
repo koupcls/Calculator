@@ -4,17 +4,11 @@ import { VueFlow, type Node as FlowNode, type Edge as FlowEdge, useVueFlow } fro
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import dagre from '@dagrejs/dagre'
+import type { TreeNode } from '../../core/trees/types'
 
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
-
-interface TreeNode {
-  code: string
-  symbols: string
-  left: TreeNode | null
-  right: TreeNode | null
-}
 
 const props = defineProps<{ treeData: TreeNode | string | null}>()
 
@@ -172,12 +166,17 @@ const treeStructure = computed(() => {
 }
 
 :deep(.vue-flow__edge-label) {
-  background: var(--color-bg);
-  padding: 2px var(--spacing-xs);
+  background: var(--color-bg-secondary); 
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
   font-size: 11px;
   color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
   font-weight: 500;
 }
 
