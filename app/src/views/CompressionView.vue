@@ -33,7 +33,7 @@ const formatDict = (dict: string | string[]) => {
     <!-- Алфавит (только для LZW) -->
     <div v-if="store.algorithm === 'lzw'" class="alphabet-section">
       <label>Алфавит (для LZW)</label>
-      <AlphabetEditor v-model="store.alphabet" placeholder="Введите символ" />
+      <AlphabetEditor v-model="store.alphabet" :default-alphabet="store.defaultAlphabet" :case-sensetive="store.caseSensetive" placeholder="Введите символ" />
     </div>
 
     <!-- Входная строка -->

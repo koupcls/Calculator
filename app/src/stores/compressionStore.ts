@@ -15,6 +15,8 @@ export type CompressionAlgorithm = 'lz77' | 'lzss' | 'lz78' | 'lzw'
 export interface CompressionState {
   input: string
   alphabet: string
+  defaultAlphabet: string
+  caseSensetive: boolean
   algorithm: CompressionAlgorithm
   lz77Steps: LZ77Step[]
   lzssSteps: LZSSStep[]
@@ -28,6 +30,8 @@ export const useCompressionStore = defineStore('compression', {
   state: (): CompressionState => ({
     input: '',
     alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя -',
+    defaultAlphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя -',
+    caseSensetive: false,
     algorithm: 'lz77',
     lz77Steps: [],
     lzssSteps: [],
