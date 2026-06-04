@@ -6,7 +6,8 @@ const DEFAULT_ALPHABET = 'абвгдеёжзийклмнопрстуфхцчшщ
 
 const props = defineProps<{ 
   modelValue: string,
-  defaultAlphabet?: string
+  defaultAlphabet?: string,
+  caseSensetive: boolean
 }>()
 
 const emit = defineEmits<{ 
@@ -24,12 +25,13 @@ const alphabetChars = computed(() => {
   })
 })
 
-const plusIndex = computed(() => alphabetChars.value.length)
-const isValidChar = (char: string) => char.length === 1 && !props.modelValue.includes(char.toLowerCase())
+const plusIndex = computed(() => alphabetChars.value.length + 1)
+const isValidChar = (char: string) => 
+  char.length === 1 && !props.modelValue.includes(props.caseSensetive === true ? char : char.toLowerCase())
 
 const handleAddChar = (char: string) => {
   if (isValidChar(char)) {
-    emit('update:modelValue', props.modelValue + char.toLowerCase())
+    emit('update:modelValue', props.modelValue + (props.caseSensetive === true ? char : char.toLowerCase()))
   }
 }
 
@@ -88,7 +90,7 @@ const isDefault = computed(() => {
         v-for="(char, idx) in alphabetChars"
         :key="`${char}-${idx}`"
         :symbol="char"
-        :index="idx"
+        :index="idx + 1"
         :focused="isFocused(idx)"
         removable
         @remove="removeChar(idx)"

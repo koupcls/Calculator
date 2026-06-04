@@ -68,6 +68,7 @@ const buildRows = (): VigenereRow[] => {
             :key="cIdx"
             :symbol="cell.symbol"
             :index="cell.index"
+            :show-number="true"
           />
         </div>
       </div>

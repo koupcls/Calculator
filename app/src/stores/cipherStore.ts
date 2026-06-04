@@ -8,7 +8,9 @@ function generateId(): string {
 
 export const useCipherStore = defineStore('cipher', {
   state: (): CipherState => ({
-    alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя -',
+    alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя ',
+    defaultAlphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя ',
+    caseSensitive: false,
     steps: [],
     isLoading: false,
     error: null
@@ -32,8 +34,8 @@ export const useCipherStore = defineStore('cipher', {
         id: generateId(),
         type,
         mode,
-        key,
-        input: stepInput,
+        key: this.caseSensitive ? key : key.toLowerCase(),
+        input: this.caseSensitive ? stepInput : stepInput.toLowerCase(),
         output: null,
         isLoading: false,
         error: null,

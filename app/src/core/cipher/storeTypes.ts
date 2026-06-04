@@ -21,6 +21,8 @@ export interface ColumnarVisualization {
 
 export interface CipherState {
   alphabet: string;
+  defaultAlphabet: string;
+  caseSensitive: boolean;
   steps: CipherStep[];
   isLoading: boolean;
   error: string | null;

@@ -6,6 +6,7 @@ import Input from '../ui/Input.vue'
 import AlphabetEditor from './AlphabetEditor.vue'
 import AddStepForm from './AddStepForm.vue'
 import StepCard from './StepCard.vue'
+import Switcher from '../ui/Switcher.vue'
 
 const store = useCipherStore()
 
@@ -45,8 +46,13 @@ const finalOutput = computed(() =>
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
           <span>Алфавит</span>
         </div>
+        <Switcher
+                v-model="store.caseSensitive"
+                icon="Aa"
+                label="Учитывать регистр"
+              />
       </div>
-      <AlphabetEditor v-model="store.alphabet" placeholder="Введите символ" />
+      <AlphabetEditor v-model="store.alphabet" :default-alphabet="store.defaultAlphabet" :case-sensetive="store.caseSensitive" placeholder="Введите символ" />
     </div>
 
     <!-- Начальный текст -->
