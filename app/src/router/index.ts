@@ -1,11 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import TreesView from '../views/TreesView.vue';
 import CipherView from '../views/CipherView.vue';
 import MaintenanceView from '../views/MaintenanceView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
 
 export const router = createRouter({
-  history: createWebHistory('/Calculator/'),
+  history: createWebHashHistory('/Calculator/'),
   routes: [
     {
       path: '/',
