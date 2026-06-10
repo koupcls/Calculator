@@ -16,7 +16,7 @@ export interface CompressionState {
   input: string
   alphabet: string
   defaultAlphabet: string
-  caseSensetive: boolean
+  caseSensitive: boolean
   algorithm: CompressionAlgorithm
   lz77Steps: LZ77Step[]
   lzssSteps: LZSSStep[]
@@ -31,7 +31,7 @@ export const useCompressionStore = defineStore('compression', {
     input: '',
     alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя -',
     defaultAlphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя -',
-    caseSensetive: false,
+    caseSensitive: false,
     algorithm: 'lz77',
     lz77Steps: [],
     lzssSteps: [],
@@ -43,17 +43,21 @@ export const useCompressionStore = defineStore('compression', {
 
   getters: {
     currentSteps: (state) => {
-      switch (state.algorithm) {
-        case 'lz77': return state.lz77Steps
-        case 'lzss': return state.lzssSteps
-        case 'lz78': return state.lz78Steps
-        case 'lzw': return state.lzwSteps
-        default: return []
+      const stepsMap = {
+        lz77: state.lz77Steps,
+        lzss: state.lzssSteps,
+        lz78: state.lz78Steps,
+        lzw: state.lzwSteps,
       }
+      return stepsMap[state.algorithm] || []
     },
     
     hasResults(): boolean {
-    return this.currentSteps.length > 0
+      return this.currentSteps.length > 0
+    },
+
+    formattedCodesString(): string {
+      return this.currentSteps.map(step => step.stringCode).join(', ')
     }
   },
 
@@ -62,40 +66,36 @@ export const useCompressionStore = defineStore('compression', {
       this.algorithm = algo
     },
 
-    setAlphabet(alphabet: string) {
-      this.alphabet = [...new Set(alphabet)].join('')
+    setAlphabet(newAlphabet: string) {
+      this.alphabet = [...new Set(newAlphabet)].join('')
+      this.process()
     },
 
-    async process() {
-      if (!this.input.trim()) {
-        this.error = 'Введите текст'
+    toggleCaseSensitivity() {
+      this.caseSensitive = !this.caseSensitive
+      this.process()
+    },
+
+    process() {
+      const targetText = this.input
+      
+      if (!targetText) {
+        this.reset()
         return
       }
 
-      this.isLoading = true
       this.error = null
+      
+      const processedText = this.caseSensitive ? targetText : targetText.toLowerCase()
+      const processedAlphabet = this.caseSensitive ? this.alphabet : this.alphabet.toLowerCase()
 
       try {
-        await new Promise(res => setTimeout(res, 50))
-
-        switch (this.algorithm) {
-          case 'lz77':
-            this.lz77Steps = lz77Compress(this.input)
-            break
-          case 'lzss':
-            this.lzssSteps = lzssCompress(this.input)
-            break
-          case 'lz78':
-            this.lz78Steps = lz78Compress(this.input)
-            break
-          case 'lzw':
-            this.lzwSteps = lzwCompress(this.input, this.alphabet)
-            break
-        }
+        this.lz77Steps = lz77Compress(processedText)
+        this.lzssSteps = lzssCompress(processedText)
+        this.lz78Steps = lz78Compress(processedText)
+        this.lzwSteps = lzwCompress(processedText, processedAlphabet)
       } catch (err) {
         this.error = err instanceof Error ? err.message : 'Ошибка сжатия'
-      } finally {
-        this.isLoading = false
       }
     },
 

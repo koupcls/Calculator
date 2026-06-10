@@ -1,8 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import TreesView from '../views/TreesView.vue';
 import CipherView from '../views/CipherView.vue';
-import MaintenanceView from '../views/MaintenanceView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
+import CompressionView from '../views/CompressionView.vue';
 
 export const router = createRouter({
   history: createWebHashHistory('/Calculator/'),
@@ -24,7 +24,7 @@ export const router = createRouter({
     {
       path: '/compression',
       name: 'compression',
-      component: MaintenanceView,
+      component: CompressionView,
     },
     {
       path: '/:pathMatch(.*)*',

@@ -1,10 +1,9 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-// Использование generic позволяет TypeScript автоматически подхватывать типы ваших данных снаружи
 
 interface ColumnConfig {
-  key: string     // Код/ключ поля в объекте данных (например: 'symbol', 'code')
-  title: string   // Название столбца для пользователя (например: 'Символ', 'Код')
-  align?: 'left' | 'center' | 'right' // Выравнивание текста
+  key: string
+  title: string
+  align?: 'left' | 'center' | 'right'
 }
 
 defineProps<{

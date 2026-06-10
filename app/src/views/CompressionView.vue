@@ -1,231 +1,266 @@
 <script setup lang="ts">
-import { useCompressionStore } from '../stores/compressionStore.ts'
+import { ref, computed } from 'vue'
+import { useCompressionStore } from '../stores/compressionStore'
 import type { CompressionAlgorithm } from '../stores/compressionStore'
-import Textarea from '../components/ui/Textarea.vue'
+import Input from '../components/ui/Input.vue'
 import Button from '../components/ui/Button.vue'
 import Tabs from '../components/ui/Tabs.vue'
+import Switcher from '../components/ui/Switcher.vue'
 import AlphabetEditor from '../components/cipher/AlphabetEditor.vue'
+import DataTable from '../components/ui/DataTable.vue'
+import ExpandableCell from '../components/ui/ExpandableCell.vue'
 
 const store = useCompressionStore()
+const isCopied = ref(false)
 
 const algorithms = [
-  { id: 'lz77' as CompressionAlgorithm, label: '📦 LZ77' },
-  { id: 'lzss' as CompressionAlgorithm, label: '🗜️ LZSS' },
-  { id: 'lz78' as CompressionAlgorithm, label: '📚 LZ78' },
-  { id: 'lzw' as CompressionAlgorithm, label: '⚡ LZW' }
+  { id: 'lz77' as CompressionAlgorithm, label: 'LZ77' },
+  { id: 'lzss' as CompressionAlgorithm, label: 'LZSS' },
+  { id: 'lz78' as CompressionAlgorithm, label: 'LZ78' },
+  { id: 'lzw' as CompressionAlgorithm, label: 'LZW' }
 ]
 
-const handleProcess = () => {
-  store.process()
+const handleCopyCodes = async () => {
+  if (!store.formattedCodesString) return
+  
+  try {
+    await navigator.clipboard.writeText(store.formattedCodesString)
+    isCopied.value = true
+    setTimeout(() => {
+      isCopied.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('Не удалось скопировать текст: ', err)
+  }
 }
 
-// Хелперы для отображения
-const formatDict = (dict: string | string[]) => {
-  if (Array.isArray(dict)) {
-    return dict.join(', ') || '-'
-  }
-  return dict || '-'
+interface TableDataRow {
+  index?: number;
+  stepIndex?: number;
+  dictionary: any;
+  stringCode: string;
+  input?: string;
+  dictLast?: string;
 }
+
+interface TableConfig {
+  columns: Array<{ key: string; title: string; align?: 'center' | 'left' | 'right' }>;
+  data: TableDataRow[];
+}
+
+const tableConfig = computed<TableConfig>(() => {
+  switch (store.algorithm) {
+    case 'lz77':
+    case 'lzss':
+      return {
+        columns: [
+          { key: 'index', title: 'Шаг', align: 'center' },
+          { key: 'dictionary', title: 'Словарь' },
+          { key: 'input', title: 'Вход' },
+          { key: 'stringCode', title: 'Код' }
+        ],
+        data: ((store.algorithm === 'lz77' ? store.lz77Steps : store.lzssSteps) as any[]).map((step, idx) => ({
+          ...step,
+          index: idx + 1,
+          dictionary: Array.isArray(step.dictionary) ? step.dictionary.join(', ') : step.dictionary
+        })) satisfies TableDataRow[]
+      }
+      
+    case 'lz78':
+      return {
+        columns: [
+          { key: 'index', title: 'Позиция', align: 'center' },
+          { key: 'dictLast', title: 'Словарь' },
+          { key: 'stringCode', title: 'Код' }
+        ],
+        data: store.lz78Steps.map((step, idx) => ({
+          ...step,
+          index: idx,
+          dictLast: step.dictionary[step.dictionary.length - 1] || '-'
+        })) satisfies TableDataRow[]
+      }
+      
+    case 'lzw':
+      return {
+        columns: [
+          { key: 'stepIndex', title: 'Позиция', align: 'center' },
+          { key: 'dictLast', title: 'Словарь' },
+          { key: 'stringCode', title: 'Код' }
+        ],        
+        data: store.lzwSteps.map((step) => ({
+          ...step,
+          dictLast: step.dictionary[step.dictionary.length - 1] || '-'
+        })) satisfies TableDataRow[]
+      }
+      
+    default:
+      return { columns: [], data: [] }
+  }
+})
 </script>
 
 <template>
-  <div class="compression-container">
-    <!-- Алфавит (только для LZW) -->
-    <div v-if="store.algorithm === 'lzw'" class="alphabet-section">
-      <label>Алфавит (для LZW)</label>
-      <AlphabetEditor v-model="store.alphabet" :default-alphabet="store.defaultAlphabet" :case-sensetive="store.caseSensetive" placeholder="Введите символ" />
+  <div class="page">
+    <!-- Секция алфавита (для LZW) -->
+    <div v-if="store.algorithm === 'lzw'" class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+          <span>Алфавит (для LZW)</span>
+        </div>
+      </div>
+      <AlphabetEditor 
+        v-model="store.alphabet" 
+        :default-alphabet="store.defaultAlphabet" 
+        :case-sensetive="store.caseSensitive" 
+        @update:modelValue="store.process()"
+        placeholder="Введите символ" 
+      />
     </div>
 
-    <!-- Входная строка -->
-    <div class="input-section">
-      <label>📥 Входная строка</label>
-      <Textarea 
+    <!-- Секция ввода текста -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          <span>Ввод текста</span>
+        </div>
+        <Switcher 
+          v-model="store.caseSensitive" 
+          @update:modelValue="store.process()"
+          label="Учитывать регистр" 
+          icon="Aa"
+        />
+      </div>
+      <Input 
         v-model="store.input" 
+        @input="store.process()"
         placeholder="Введите текст для сжатия..." 
-        :rows="2" 
       />
       <div class="actions">
         <Button 
-          variant="primary" 
-          @click="handleProcess" 
-          :disabled="!store.input.trim() || store.isLoading"
+          v-if="store.hasResults"
+          variant="secondary" 
+          @click="handleCopyCodes"
+          class="copy-btn"
         >
-          {{ store.isLoading ? 'Обработка...' : '▶ Сжать' }}
+          {{ isCopied ? 'Скопировано!' : 'Скопировать коды' }}
         </Button>
-        <Button variant="ghost" @click="store.clearAll()">🗑 Сброс</Button>
       </div>
     </div>
 
-    <!-- Вкладки алгоритмов -->
-    <Tabs v-model="store.algorithm" :tabs="algorithms" />
-
-    <!-- Таблица результатов -->
-    <div v-if="store.hasResults" class="table-section">
-      <!-- LZ77 -->
-      <table v-if="store.algorithm === 'lz77'" class="compression-table">
-        <thead>
-          <tr>
-            <th>Шаг</th>
-            <th>Словарь</th>
-            <th>Вход</th>
-            <th>Код</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(step, idx) in store.lz77Steps" :key="idx">
-            <td class="step-num">{{ idx + 1 }}</td>
-            <td class="mono">{{ step.dictionary }}</td>
-            <td class="mono">{{ step.input }}</td>
-            <td class="mono code">{{ step.code }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- LZSS -->
-      <table v-else-if="store.algorithm === 'lzss'" class="compression-table">
-        <thead>
-          <tr>
-            <th>Шаг</th>
-            <th>Словарь</th>
-            <th>Вход</th>
-            <th>Код</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(step, idx) in store.lzssSteps" :key="idx">
-            <td class="step-num">{{ idx + 1 }}</td>
-            <td class="mono">{{ step.dictionary }}</td>
-            <td class="mono">{{ step.input }}</td>
-            <td class="mono code" :class="{ literal: step.isLiteral }">
-              {{ step.code }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- LZ78 -->
-      <table v-else-if="store.algorithm === 'lz78'" class="compression-table">
-        <thead>
-          <tr>
-            <th>Позиция</th>
-            <th>Словарь</th>
-            <th>Код</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(step, idx) in store.lz78Steps" :key="idx">
-            <td class="step-num">{{ step.position }}</td>
-            <td class="mono dict-list">{{ formatDict(step.dictionary) }}</td>
-            <td class="mono code">{{ step.code }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- LZW -->
-      <table v-else-if="store.algorithm === 'lzw'" class="compression-table">
-        <thead>
-          <tr>
-            <th>Позиция</th>
-            <th>Словарь</th>
-            <th>Код</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(step, idx) in store.lzwSteps" :key="idx">
-            <td class="step-num">{{ step.position }}</td>
-            <td class="mono dict-list">{{ formatDict(step.dictionary) }}</td>
-            <td class="mono code">{{ step.code }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Секция выбора алгоритма -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Алгоритм</span>
+        </div>
+      </div>
+      <Tabs v-model="store.algorithm" :tabs="algorithms" />
     </div>
 
-    <!-- Пустое состояние -->
-    <div v-else-if="!store.isLoading && !store.input" class="empty-state">
-      <span class="emoji">📦</span>
-      <p>Выберите алгоритм и введите строку для сжатия</p>
+    <!-- Секция таблицы шагов -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          <span>Таблица шагов</span>
+        </div>
+      </div>
+      
+      <DataTable
+        v-if="store.hasResults"
+        :columns="tableConfig.columns"
+        :data="tableConfig.data"
+      >
+        <template #index="{ value }">
+          <span class="step-num">{{ value }}</span>
+        </template>
+
+        <template #stepIndex="{ value }">
+          <span class="step-num">{{ value }}</span>
+        </template>
+
+        <template #dictionary="{ value }">
+          <ExpandableCell :text="value" />
+        </template>
+
+        <template #input="{ value }">
+          <ExpandableCell :text="value" />
+        </template>
+
+        <template #dictLast="{ value }">
+          <ExpandableCell :text="value" />
+        </template>
+
+        <template #stringCode="{ value }">
+          <span class="mono code">{{ value }}</span>
+        </template>
+      </DataTable>
+
+      <div v-else class="empty-state">
+        <span class="emoji"></span>
+        <p>Введите строку для мгновенного расчета всех алгоритмов сжатия</p>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.compression-container {
+.page {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  padding: var(--spacing-md);
 }
 
-.alphabet-section label {
-  display: block;
-  margin-bottom: var(--spacing-xs);
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.input-section {
+.section {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
 }
 
-.input-section label {
-  display: block;
-  margin-bottom: var(--spacing-xs);
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text);
+}
+
+.section-title svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .actions {
   display: flex;
+  justify-content: flex-end;
   gap: var(--spacing-sm);
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
-.table-section {
-  overflow-x: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-secondary);
-}
-
-.compression-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-sans);
-  min-width: 600px;
-}
-
-.compression-table th {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  padding: var(--spacing-sm) var(--spacing-md);
-  text-align: left;
-  border-bottom: 2px solid var(--color-border);
-  white-space: nowrap;
-}
-
-.compression-table td {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text);
-  vertical-align: middle;
-}
-
-.compression-table tr:last-child td {
-  border-bottom: none;
-}
-
-.compression-table tr:hover td {
-  background: var(--color-bg-tertiary);
+.copy-btn {
+  min-width: 170px;
 }
 
 .step-num {
   font-weight: 700;
   color: var(--color-primary);
+  display: block;
   text-align: center;
-  min-width: 50px;
 }
 
 .mono {
@@ -237,50 +272,51 @@ const formatDict = (dict: string | string[]) => {
   color: var(--color-primary);
   font-weight: 600;
   background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 4px 8px;
   display: inline-block;
-}
-
-.code.literal {
-  color: var(--color-success);
-}
-
-.dict-list {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: nowrap; 
 }
 
 .empty-state {
   text-align: center;
   padding: var(--spacing-xl);
   color: var(--color-text-muted);
-  background: var(--color-bg-secondary);
+  background: var(--color-bg);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
 }
 
-.empty-state .emoji {
-  font-size: 32px;
-  display: block;
-  margin-bottom: var(--spacing-sm);
+@media (max-width: 768px) {
+  .page {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-md);
+  }
+
+  .section {
+    padding: var(--spacing-sm);
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+  
+  .actions .copy-btn {
+    width: 100%;
+  }
 }
 
-@media (max-width: 768px) {
-  .compression-table th,
-  .compression-table td {
-    padding: 8px;
-    font-size: 12px;
-  }
-  
-  .dict-list {
-    max-width: 150px;
-  }
-  
-  .actions {
-    flex-direction: column;
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 14px;
   }
 }
 </style>
