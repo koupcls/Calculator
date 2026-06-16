@@ -274,17 +274,13 @@ const tableConfig = computed<TableConfig>(() => {
   }
 
   .section-header {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
     gap: var(--spacing-sm);
   }
 
   .actions {
     flex-direction: column-reverse;
-    width: 100%;
-  }
-  
-  .actions .copy-btn {
     width: 100%;
   }
 }

@@ -239,7 +239,7 @@ const finalOutput = computed(() =>
   }
 
   .section-header {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
     gap: var(--spacing-sm);
   }
