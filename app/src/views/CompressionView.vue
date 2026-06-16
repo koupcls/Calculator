@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useCompressionStore } from '../stores/compressionStore'
 import type { CompressionAlgorithm } from '../stores/compressionStore'
 import Input from '../components/ui/Input.vue'
-import Button from '../components/ui/Button.vue'
 import Tabs from '../components/ui/Tabs.vue'
 import Switcher from '../components/ui/Switcher.vue'
 import AlphabetEditor from '../components/cipher/AlphabetEditor.vue'
 import DataTable from '../components/ui/DataTable.vue'
 import ExpandableCell from '../components/ui/ExpandableCell.vue'
+import CopyButton from '../components/ui/CopyButton.vue'
 
 const store = useCompressionStore()
-const isCopied = ref(false)
 
 const algorithms = [
   { id: 'lz77' as CompressionAlgorithm, label: 'LZ77' },
@@ -19,20 +18,6 @@ const algorithms = [
   { id: 'lz78' as CompressionAlgorithm, label: 'LZ78' },
   { id: 'lzw' as CompressionAlgorithm, label: 'LZW' }
 ]
-
-const handleCopyCodes = async () => {
-  if (!store.formattedCodesString) return
-  
-  try {
-    await navigator.clipboard.writeText(store.formattedCodesString)
-    isCopied.value = true
-    setTimeout(() => {
-      isCopied.value = false
-    }, 2000)
-  } catch (err) {
-    console.error('Не удалось скопировать текст: ', err)
-  }
-}
 
 interface TableDataRow {
   index?: number;
@@ -137,16 +122,6 @@ const tableConfig = computed<TableConfig>(() => {
         @input="store.process()"
         placeholder="Введите текст для сжатия..." 
       />
-      <div class="actions">
-        <Button 
-          v-if="store.hasResults"
-          variant="secondary" 
-          @click="handleCopyCodes"
-          class="copy-btn"
-        >
-          {{ isCopied ? 'Скопировано!' : 'Скопировать коды' }}
-        </Button>
-      </div>
     </div>
 
     <!-- Секция выбора алгоритма -->
@@ -167,6 +142,10 @@ const tableConfig = computed<TableConfig>(() => {
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
           <span>Таблица шагов</span>
         </div>
+        <CopyButton 
+          v-if="store.formattedCodesString" 
+          :text="store.formattedCodesString" 
+        />
       </div>
       
       <DataTable
@@ -195,7 +174,7 @@ const tableConfig = computed<TableConfig>(() => {
         </template>
 
         <template #stringCode="{ value }">
-          <span class="mono code">{{ value }}</span>
+          <span class="step-num">{{ value }}</span>
         </template>
       </DataTable>
 
@@ -250,10 +229,6 @@ const tableConfig = computed<TableConfig>(() => {
   justify-content: flex-end;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-md);
-}
-
-.copy-btn {
-  min-width: 170px;
 }
 
 .step-num {
