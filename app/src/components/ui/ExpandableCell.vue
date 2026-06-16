@@ -23,14 +23,15 @@ const isExpanded = ref(false)
 
 <style scoped>
 .expandable-cell {
+  max-width: 200px;
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease-in-out;
   font-family: var(--font-mono);
   font-size: 13px;
+  -webkit-tap-highlight-color: transparent; 
 }
 
-/* Свернутое состояние (Ограничение по ширине + троеточие) */
 .expandable-cell:not(.is-expanded) {
   max-width: 200px;
   white-space: nowrap;
@@ -39,11 +40,9 @@ const isExpanded = ref(false)
 }
 
 .expandable-cell:not(.is-expanded):hover {
-  color: var(--color-primary);
   text-decoration: underline;
 }
 
-/* Развернутое состояние (Растет вниз + внутренний вертикальный скролл) */
 .expandable-cell.is-expanded {
   white-space: pre-wrap;
   word-break: break-all;
@@ -56,19 +55,20 @@ const isExpanded = ref(false)
   box-shadow: inset var(--shadow-sm);
 }
 
-/* Кастомизация встроенного скроллбара для раскрытой ячейки */
-.expandable-cell.is-expanded::-webkit-scrollbar {
-  width: 4px;
-}
-.expandable-cell.is-expanded::-webkit-scrollbar-track {
-  background: transparent;
-}
-.expandable-cell.is-expanded::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
 .empty-dash {
   color: var(--color-text-muted);
+}
+
+@media (max-width: 768px) {
+  .expandable-cell:not(.is-expanded) {
+    max-width: 70px;
+  }
+
+  .expandable-cell {
+    max-width: 70px;
+  }
+  .expandable-cell.is-expanded {
+    max-height: 80px;
+  }
 }
 </style>

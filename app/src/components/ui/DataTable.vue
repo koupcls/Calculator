@@ -18,7 +18,6 @@ defineProps<{
     <table class="base-dynamic-table">
       <thead>
         <tr>
-          <!-- Генерируем заголовки по конфигурации -->
           <th 
             v-for="col in columns" 
             :key="col.key"
@@ -30,19 +29,16 @@ defineProps<{
       </thead>
       <tbody>
         <tr v-for="(row, rowIndex) in data" :key="rowIndex">
-          <!-- Генерируем ячейки для каждой строки -->
           <td 
             v-for="col in columns" 
             :key="col.key"
             :style="{ textAlign: col.align || 'left' }"
           >
-            <!-- Использование слота: позволяет кастомизировать ячейку по её ключу снаружи -->
             <slot :name="col.key" :value="row[col.key]" :row="row">
               {{ row[col.key] }}
             </slot>
           </td>
         </tr>
-        <!-- Если данных нет -->
         <tr v-if="data.length === 0">
           <td :colspan="columns.length" class="empty-cell">
             {{ emptyText || 'Нет данных для отображения' }}
@@ -56,7 +52,10 @@ defineProps<{
 <style scoped>
 .table-container {
   width: 100%;
+  max-height: 380px; 
   overflow-x: auto;
+  overflow-y: auto;
+  padding-right: 4px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg-secondary);
@@ -71,12 +70,17 @@ defineProps<{
 }
 
 .base-dynamic-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: var(--color-bg-tertiary);
   color: var(--color-text-secondary);
   font-weight: 600;
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 2px solid var(--color-border);
   white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+  
 }
 
 .base-dynamic-table td {
@@ -98,5 +102,25 @@ defineProps<{
   color: var(--color-text-muted);
   padding: var(--spacing-lg) 0;
   font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .base-dynamic-table {
+    font-size: 12px; 
+  }
+
+  .base-dynamic-table th,
+  .base-dynamic-table td {
+  
+    padding: var(--spacing-xs, 6px) var(--spacing-sm, 8px); 
+  }
+
+  .base-dynamic-table th {
+    white-space: normal; 
+  }
+
+  .base-dynamic-table td {
+    word-break: break-word;
+  }
 }
 </style>

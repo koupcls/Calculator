@@ -17,13 +17,13 @@ const navigate = (path: string) => router.push(path)
 </script>
 
 <template>
-  <header class="app-header">
+  <header class="header">
     <div class="header-content">
       <div class="header-left" @click="navigate('/trees')">
-        <span class="app-title">Calculator</span>
+        <span class="title">Calculator</span>
       </div>
 
-      <nav class="app-nav">
+      <nav class="desktop-nav">
         <button
           v-for="tab in tabs"
           :key="tab.path"
@@ -43,7 +43,7 @@ const navigate = (path: string) => router.push(path)
 </template>
 
 <style scoped>
-.app-header {
+.header {
   position: sticky;
   top: var(--spacing-md, 16px); 
   z-index: 100;
@@ -52,6 +52,8 @@ const navigate = (path: string) => router.push(path)
   border-radius: var(--radius-md);
   margin: 0 var(--spacing-md);
   transition: all var(--transition);
+  background: color-mix(in srgb, var(--color-bg-secondary) 85%, transparent);
+  backdrop-filter: blur(8px);
 }
 
 .header-content {
@@ -70,7 +72,7 @@ const navigate = (path: string) => router.push(path)
   flex-shrink: 0;
 }
 
-.app-title {
+.title {
   font-size: 20px;
   font-weight: 700;
   color: var(--color-text);
@@ -79,11 +81,11 @@ const navigate = (path: string) => router.push(path)
   user-select: none;
 }
 
-.app-title:hover {
+.title:hover {
   opacity: 0.7;
 }
 
-.app-nav {
+.desktop-nav {
   display: flex;
   gap: 6px;
   background: var(--color-bg);
@@ -127,11 +129,12 @@ const navigate = (path: string) => router.push(path)
 }
 
 @media (min-width: 1400px) {
-  .app-header {
+  .header {
     margin: 0;
     border-left: none;
     border-right: none;
     border-top: none;
+    border-radius: var(--radius-md);
   }
   
   .header-content {
@@ -140,47 +143,21 @@ const navigate = (path: string) => router.push(path)
 }
 
 @media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .header {
+    top: 0;
+    margin: 0;
+    border-radius: var(--radius-md);
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
   .header-content {
-    padding: 10px var(--spacing-md);
-    gap: var(--spacing-sm);
-  }
-
-  .app-title {
-    font-size: 18px;
-  }
-
-  .app-nav {
-    gap: 4px;
-    padding: 3px;
-    max-width: none;
-  }
-
-  .nav-tab {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 480px) {
-  .app-header {
-    margin: 2 var(--spacing-sm);
-  }
-  
-  .header-content {
-    padding: 8px var(--spacing-sm);
-  }
-
-  .app-title {
-    font-size: 10px;
-  }
-
-  .app-nav {
-    gap: 2px;
-  }
-
-  .nav-tab {
-    padding: 5px 8px;
-    font-size: 9px;
+    padding: 12px var(--spacing-md);
   }
 }
 </style>
