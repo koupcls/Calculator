@@ -83,7 +83,7 @@ function getLayoutedElements(
     return {
       ...node,
       position: {
-        x: pos.x - currentWidth / 2,
+        x: -pos.x + currentWidth / 2,
         y: pos.y - nodeHeight.value / 2,
       },
     }

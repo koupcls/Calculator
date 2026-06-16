@@ -16,22 +16,29 @@ export class HuffmanTree extends Tree {
                 right: null
             }
 
-            queue.add({node: node, weight: count })
+            queue.add({node: node, weight: count})
         }
         
         while (queue.size !== 1) {
-            const first = queue.poll()!
-            const second = queue.poll()!
+            console.log(queue.list)
+            let first = queue.poll()!
+            let second = queue.poll()!
 
 
-            const parentNode: TreeNode = {
+            if (first.weight == second.weight) {
+                const temp = first
+                first = second
+                second = temp
+            }
+
+            let parentNode: TreeNode = {
                 code: '',
                 symbols: first.node.symbols + second.node.symbols, 
                 left: first.node,
                 right: second.node
             };
 
-            queue.add({node: parentNode, weight: first?.weight + second?.weight})
+            queue.set({node: parentNode, weight: first?.weight + second?.weight}, Math.min(first.idx!, second.idx!))
         }
 
         this.root = queue.poll()!.node
