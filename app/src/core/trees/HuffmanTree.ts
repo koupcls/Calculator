@@ -8,7 +8,7 @@ export class HuffmanTree extends Tree {
     protected buildTree(_root: TreeNode, frequencies: [string, number][]): void {
         const queue = new PriorityQueue()
 
-        for (const [symbol, count] of frequencies) {
+        for (const [symbol, count] of frequencies.reverse()) {
             const node: TreeNode = {
                 code: '',
                 symbols: symbol,
@@ -18,10 +18,11 @@ export class HuffmanTree extends Tree {
 
             queue.add({node: node, weight: count })
         }
-
+        
         while (queue.size !== 1) {
             const first = queue.poll()!
             const second = queue.poll()!
+
 
             const parentNode: TreeNode = {
                 code: '',
