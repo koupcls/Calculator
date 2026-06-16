@@ -3,6 +3,8 @@ export type CipherType = 'vigenere' | 'columnar';
 
 export interface CipherStep {
   id: string;
+  keyId: string;
+  keyIdx: number;
   type: CipherType;
   mode: CipherMode;
   key: string;

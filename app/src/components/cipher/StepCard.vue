@@ -1,31 +1,25 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useCipherStore } from '../../stores/cipherStore'
 import type { CipherType, CipherMode } from '../../core/cipher/storeTypes'
 import VigenereTable from './VigenereTable.vue'
-import Tile from '../ui/Tile.vue'
+import type { CipherStep as Step } from '../../core/cipher/storeTypes'
+import ColumnarTable from './ColumnarTable.vue'
 
-interface Step {
-  id: string
-  type: CipherType
-  mode: CipherMode
-  key: string
-  input: string
-  output: string | null
-  isLoading: boolean
-  error: string | null
-  visualization?: any
-  alphabet?: string
-}
-
-const props = defineProps<{ step: Step; index: number }>()
+const props = defineProps<{ step: Step }>()
 defineEmits<{ (e: 'remove'): void }>()
+
+const store = useCipherStore()
+
+const originalKey = computed(() => store.keys.find(k => k.id === props.step.keyId))
+const isKeyEmpty = computed(() => !originalKey.value?.value?.trim())
 
 const getCipherLabel = (t: CipherType) => t === 'vigenere' ? 'Смещение' : 'Перестановка'
 const getModeLabel = (m: CipherMode) => m === 'encrypt' ? 'Зашифровать' : 'Расшифровать'
-const getColumnOrder = (sorted: number[], idx: number) => sorted.indexOf(idx) + 1
 </script>
 
 <template>
-  <div class="step-card" :class="{ 'has-error': step.error }">
+  <div class="step-card" :class="{ 'has-error': step.error || isKeyEmpty }">
     <div class="step-header">
       <div class="step-info">
         <span class="cipher-badge">
@@ -52,19 +46,21 @@ const getColumnOrder = (sorted: number[], idx: number) => sorted.indexOf(idx) + 
       
       <div class="flow-divider">
         <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        <code class="mono flow-key">{{ step.key }}</code>
+        <code class="mono flow-key" :class="{ 'key-error': isKeyEmpty }">
+          {{ originalKey ? ( isKeyEmpty ? `Ключ ${step.keyIdx} пуст` : step.key ) : 'Ключ удалён' }}
+        </code>
       </div>
       
       <div class="flow-block">
         <span class="flow-label">Выход</span>
         <code v-if="step.isLoading" class="mono flow-value loading">Обработка...</code>
-        <code v-else-if="step.error" class="mono flow-value error" :title="step.error">Ошибка</code>
+        <code v-else-if="isKeyEmpty" class="mono flow-value loading">-</code>
+        <code v-else-if="step.error" class="mono flow-value error" :title="step.error ?? undefined">Ошибка</code>
         <code v-else class="mono flow-value success">{{ step.output || '—' }}</code>
       </div>
     </div>
 
-    <!-- Визуализация Виженера -->
-    <div v-if="step.type === 'vigenere' && step.output && step.alphabet" class="step-viz">
+    <div v-if="step.type === 'vigenere' && step.output && step.alphabet && !isKeyEmpty">
       <VigenereTable
         :input="step.input"
         :modelValue="step.key.trim()"
@@ -73,28 +69,11 @@ const getColumnOrder = (sorted: number[], idx: number) => sorted.indexOf(idx) + 
       />
     </div>
 
-    <!-- Визуализация Перестановки -->
-    <div v-if="step.visualization && step.type === 'columnar'" class="step-viz">
-      <div class="viz-table">
-        <div class="viz-row viz-header">
-          <span>Ключ</span>
-          <span></span>
-          <span>Символы</span>
-        </div>
-        <div v-for="(keyChar, colIdx) in step.key.split('')" :key="colIdx" class="viz-row">
-          <span class="viz-order">{{ getColumnOrder(step.visualization.sortedOrder, colIdx) }}</span>
-          <span class="viz-key">{{ keyChar === ' ' ? '_' : keyChar }}</span>
-          <div class="viz-symbols">
-            <Tile
-              v-for="(row, rowIdx) in step.visualization.table"
-              :key="rowIdx"
-              :symbol="row[colIdx] === ' ' ? '_' : (row[colIdx] || '')"
-              :index="Number(rowIdx) + 1"
-              :showNumber="false"
-            />
-          </div>
-        </div>
-      </div>
+    <div v-if="step.visualization && step.type === 'columnar' && !isKeyEmpty">
+      <ColumnarTable
+        :visualization="step.visualization"
+        :cipher-key="step.key"
+      />
     </div>
   </div>
 </template>
@@ -226,10 +205,6 @@ const getColumnOrder = (sorted: number[], idx: number) => sorted.indexOf(idx) + 
   transition: border-color var(--transition);
 }
 
-.flow-value:hover {
-  border-color: var(--color-primary);
-}
-
 .flow-value.loading {
   color: var(--color-text-muted);
   font-style: italic;
@@ -263,139 +238,34 @@ const getColumnOrder = (sorted: number[], idx: number) => sorted.indexOf(idx) + 
 }
 
 .flow-key {
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-tertiary);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  white-space: nowrap;
-}
-
-.step-viz {
-  padding-top: var(--spacing-md);
-  border-top: 1px dashed var(--color-border);
-}
-
-/* Перестановка */
-.viz-table { display: flex; flex-direction: column; gap: 4px; }
-.viz-row { display: grid; grid-template-columns: 50px 70px 1fr; gap: 4px; padding: 2px; }
-.viz-header {
-  padding: var(--spacing-sm);
-  background: var(--color-bg-tertiary);
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  font-size: 11px;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-}
-.viz-order, .viz-key {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-sm);
-  font-family: var(--font-mono);
   font-size: 13px;
-  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  padding: 6px 10px;
+  border-radius: calc(var(--radius-sm) * 1.2);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-.viz-order { color: var(--color-text-secondary); font-family: var(--font-sans); }
-.viz-key { color: var(--color-text); font-weight: 600; }
-.viz-symbols {
-  display: flex;
-  gap: 2px;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  overflow-x: auto;
-  min-height: 36px;
+  max-width: 150px;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-@media (max-width: 900px) {
-  .step-flow {
-    gap: var(--spacing-md);
-  }
+.flow-key.key-error {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 10%, var(--color-bg));
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
-  .step-header {
-    padding-bottom: var(--spacing-sm);
-  }
-  
-  .step-info {
-    gap: 6px;
-  }
-  
-  .cipher-badge {
-    padding: 3px 8px;
-    font-size: 11px;
-  }
-  
-  .mode-badge {
-    padding: 3px 6px;
-    font-size: 10px;
-  }
-  
-  .step-remove {
-    opacity: 1;
-    width: 24px;
-    height: 24px;
-  }
-  
   .step-flow {
     grid-template-columns: 1fr;
     gap: var(--spacing-sm);
   }
-  
-  .flow-divider {
-    flex-direction: row;
-    justify-content: center;
-    gap: 6px;
-  }
-  
+
   .flow-divider .arrow {
     transform: rotate(90deg);
-  }
-  
-  .flow-value {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-  
-  .viz-row {
-    grid-template-columns: 40px 60px 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .step-card {
-    padding: var(--spacing-sm);
-  }
-  
-  .cipher-badge {
-    padding: 2px 6px;
-    font-size: 10px;
-  }
-  
-  .mode-badge {
-    padding: 2px 5px;
-    font-size: 9px;
-  }
-  
-  .flow-label {
-    font-size: 9px;
-  }
-  
-  .flow-value {
-    font-size: 11px;
-    padding: 5px 8px;
-  }
-  
-  .flow-key {
-    font-size: 10px;
-    padding: 3px 6px;
   }
 }
 </style>

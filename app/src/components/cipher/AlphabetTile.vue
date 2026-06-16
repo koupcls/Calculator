@@ -91,7 +91,6 @@ const handleRemoveClick = (e: Event) => {
 </template>
 
 <style scoped>
-/* Стили для плюс-тайла */
 .plus-tile {
   position: relative;
   display: inline-flex;
@@ -170,7 +169,6 @@ const handleRemoveClick = (e: Event) => {
   opacity: 0.6;
 }
 
-/* Стили для обычного тайла */
 .alphabet-tile {
   position: relative;
   display: inline-flex;
@@ -182,7 +180,6 @@ const handleRemoveClick = (e: Event) => {
   transform: translateY(-2px);
 }
 
-/* Выделенный тайл */
 .alphabet-tile.focused {
   transform: translateY(-2px);
 }
@@ -192,7 +189,6 @@ const handleRemoveClick = (e: Event) => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
-/* Крестик в углу */
 .tile-remove {
   position: absolute;
   top: -6px;

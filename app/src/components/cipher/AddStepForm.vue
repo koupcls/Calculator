@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { useCipherStore } from '../../stores/cipherStore'
 import type { CipherType, CipherMode } from '../../core/cipher/storeTypes'
-import Textarea from '../ui/Textarea.vue'
 import Button from '../ui/Button.vue'
 import SegmentedControl from '../ui/SegmentedControl.vue'
 
@@ -18,8 +18,10 @@ const emit = defineEmits<{
   (e: 'submit'): void
 }>()
 
+const store = useCipherStore()
+
 const handleSubmit = () => {
-  if (props.modelValue.trim() && !props.disabled) {
+  if (props.modelValue && !props.disabled) {
     emit('submit')
   }
 }
@@ -34,13 +36,25 @@ const modeLabels = ['Зашифровать', 'Расшифровать'] as con
   <div class="add-step-form">
     <div class="form-grid">
       <div class="form-left">
-        <Textarea
-          :model-value="modelValue"
-          @update:model-value="emit('update:modelValue', $event)"
-          placeholder="Введите ключ..."
-          :rows="2"
-          @keyup.enter.exact.prevent="handleSubmit"
-        />
+        <span class="field-label">Выберите ключ:</span>
+        <div class="chips-container">
+          <button
+            v-for="(keyItem, idx) in store.keys"
+            :key="keyItem.id"
+            type="button"
+            class="key-chip"
+            :class="{
+              'selected': modelValue === keyItem.id && keyItem.value.trim(),
+              'invalid': !keyItem.value.trim()
+            }"
+            :disabled="!keyItem.value.trim()"
+            @click="emit('update:modelValue', keyItem.id)"
+          >
+
+            <span class="chip-title">{{ idx + 1 }}</span>
+            <span v-if="keyItem.value.trim()" class="chip-preview">{{ keyItem.value }}</span>
+          </button>
+        </div>
       </div>
       
       <div class="form-right">
@@ -62,7 +76,7 @@ const modeLabels = ['Зашифровать', 'Расшифровать'] as con
         <Button 
           variant="primary" 
           @click="handleSubmit"
-          :disabled="!modelValue.trim() || disabled"
+          :disabled="!modelValue || disabled"
           class="add-button"
         >
           Добавить
@@ -88,13 +102,90 @@ const modeLabels = ['Зашифровать', 'Расшифровать'] as con
 }
 
 .form-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
   min-width: 0;
 }
 
-.form-left :deep(textarea) {
-  height: 100%;
-  min-height: 64px;
-  resize: none;
+.field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; 
+  gap: var(--spacing-sm) var(--spacing-xs); 
+  width: 100%;
+}
+
+.chips-container::after {
+  content: "";
+  flex: auto;
+}
+
+.chip-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.key-chip {
+  flex: 0 1 auto; 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all var(--transition);
+  min-width: 0; 
+}
+
+
+.key-chip:hover {
+  border-color: var(--color-primary);
+}
+
+.key-chip:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.key-chip.selected {
+  border-color: var(--color-primary);
+  font-weight: 500;
+}
+
+.key-chip.invalid:hover {
+  border-color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 4%, var(--color-bg));
+  cursor: not-allowed;
+}
+
+.chip-preview {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  opacity: 1;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-error-msg {
+  font-size: 11px;
+  color: var(--color-error);
+  font-weight: 600;
 }
 
 .form-right {
@@ -125,7 +216,6 @@ const modeLabels = ['Зашифровать', 'Расшифровать'] as con
       "right action";
     gap: var(--spacing-sm);
   }
-
   .form-left { grid-area: left; }
   .form-right { grid-area: right; flex-direction: row; min-height: auto; }
   .form-right :deep(.segmented-control) { min-height: 36px; }
@@ -134,7 +224,6 @@ const modeLabels = ['Зашифровать', 'Расшифровать'] as con
 }
 
 @media (max-width: 640px) {
-  .add-step-form { padding: var(--spacing-sm); }
   .form-grid {
     grid-template-columns: 1fr;
     grid-template-areas: "left" "right" "action";
@@ -142,6 +231,5 @@ const modeLabels = ['Зашифровать', 'Расшифровать'] as con
   .form-right { flex-direction: column; }
   .form-action { width: 100%; }
   .add-button { width: 100%; }
-  .form-left :deep(textarea) { min-height: 56px; }
 }
 </style>

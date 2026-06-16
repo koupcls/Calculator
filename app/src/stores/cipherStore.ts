@@ -1,17 +1,20 @@
 import { defineStore } from 'pinia'
 import { vigenereCipher, columnarTransposition } from '../core/cipher/algorithms'
-import type { CipherState, CipherStep, CipherMode, CipherType } from '../core/cipher/storeTypes'
+import type { CipherStep, CipherMode, CipherType } from '../core/cipher/storeTypes'
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 9)
 }
 
 export const useCipherStore = defineStore('cipher', {
-  state: (): CipherState => ({
+  state: () => ({
     alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя ',
     defaultAlphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя ',
     caseSensitive: false,
-    steps: [],
+    steps: [] as CipherStep[],
+    keys: [
+      { id: generateId(), value: '', idx: 1 }
+    ] as { id: string; value: string; idx: number }[],
     isLoading: false,
     error: null
   }),
@@ -27,14 +30,49 @@ export const useCipherStore = defineStore('cipher', {
       this.alphabet = [...new Set(alphabet)].join('')
     },
 
-    addStep(type: CipherType, mode: CipherMode, key: string, input?: string) {
-      const stepInput = input !== undefined ? input : (this.lastOutput ?? '')
+    addKeyInput() {
+      this.keys.push({ id: generateId(), value: '', idx: this.keys.length + 1 })
+    },
+
+    removeKeyInput(id: string) {
+      if (this.keys.length > 1) {
+        this.keys = this.keys.filter(k => k.id !== id)
+        this.keys.forEach((k, idx) => k.idx = idx)
+      }
+    },
+
+    async updateKey(id: string, newValue: string) {
+      const keyObj = this.keys.find(k => k.id === id)
+      if (!keyObj) return
       
+      keyObj.value = newValue
+
+      const formattedKey = this.caseSensitive ? newValue : newValue.toLowerCase()
+      this.steps.forEach(step => {
+        if (step.keyId === id) {
+          step.key = formattedKey
+        }
+      })
+
+      const firstAffectedIndex = this.steps.findIndex(step => step.id === id)
+      if (firstAffectedIndex !== -1) {
+        await this.recalculateFrom(firstAffectedIndex)
+      }
+    },
+
+    addStep(type: CipherType, mode: CipherMode, id: string, input?: string) {
+      const stepInput = input !== undefined ? input : (this.lastOutput ?? '')
+      const keyObj = this.keys.find(k => k.id === id)
+      const keyIdx = keyObj ? keyObj.idx : -1
+      const rawKey = keyObj ? keyObj.value : ''
+
       const newStep: CipherStep = {
         id: generateId(),
         type,
         mode,
-        key: this.caseSensitive ? key : key.toLowerCase(),
+        keyId: id,
+        keyIdx: keyIdx,
+        key: this.caseSensitive ? rawKey : rawKey.toLowerCase(),
         input: this.caseSensitive ? stepInput : stepInput.toLowerCase(),
         output: null,
         isLoading: false,
@@ -55,7 +93,12 @@ export const useCipherStore = defineStore('cipher', {
 
     async runStep(stepId: string) {
       const step = this.steps.find(s => s.id === stepId)
-      if (!step || !step.input) return
+      if (!step) return
+
+      if (!step.input || !step.key.trim()) {
+        step.output = null
+        return
+      }
 
       step.isLoading = true
       step.error = null
@@ -84,12 +127,20 @@ export const useCipherStore = defineStore('cipher', {
       
         if (i > 0) {
           const prevStep = this.steps[i - 1]
-          if (!prevStep?.output) break
+          if (!prevStep?.output) {
+            step.output = null
+            break
+          }
           step.input = prevStep.output
         }
         
         await this.runStep(step.id)
-        if (step.error) break
+        if (step.error) {
+          for (let j = i + 1; j < this.steps.length; j++) {
+            this.steps[j].output = null
+          }
+          break
+        }
       }
     }
   }

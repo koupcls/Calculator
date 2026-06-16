@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import AlphabetTile from './AlphabetTile.vue'
+import Button from '../ui/Button.vue'
 
 const DEFAULT_ALPHABET = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя -'
 
@@ -84,7 +85,6 @@ const isDefault = computed(() => {
     @focus="handleFocus"
     @blur="focusedIndex = null"
   >
-    <!-- 🔹 Центрируем тайлы по горизонтали -->
     <div class="tiles-container">
       <AlphabetTile
         v-for="(char, idx) in alphabetChars"
@@ -97,7 +97,6 @@ const isDefault = computed(() => {
         @click="handleTileClick(idx)"
       />
       
-      <!-- 🔹 Плюс-тайл -->
       <AlphabetTile
         :index="plusIndex"
         :focused="isFocused(plusIndex)"
@@ -110,20 +109,30 @@ const isDefault = computed(() => {
       Нажмите <span class="plus-inline">+</span> чтобы добавить символ
     </div>
 
-    <div class="editor-info">
-      <span>Символов: <strong>{{ alphabetChars.length }}</strong></span>
+   <div class="editor-info">
+    <span>Символов: <strong>{{ alphabetChars.length }}</strong></span>
       <div class="editor-actions">
-        <button 
+        <Button 
           v-if="!isDefault" 
-          class="reset-btn" 
+          variant="secondary"
+          size="sm"
           @click="resetAlphabet"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
           Сбросить
-        </button>
-        <button class="clear-btn" @click="emit('update:modelValue', '')" v-if="alphabetChars.length > 0">
+        </Button>
+
+        <Button 
+          v-if="alphabetChars.length > 0"
+          variant="secondary" 
+          size="sm"
+          @click="emit('update:modelValue', '')"
+        >
           Очистить
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -147,7 +156,6 @@ const isDefault = computed(() => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
-/* 🔹 Центрирование тайлов + перенос строк */
 .tiles-container {
   display: flex;
   flex-wrap: wrap;
@@ -231,7 +239,6 @@ const isDefault = computed(() => {
   color: #fff;
 }
 
-/* 🔹 Адаптивность */
 @media (max-width: 768px) {
   .editor-info {
     flex-direction: column;
