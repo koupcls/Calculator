@@ -49,6 +49,7 @@ defineProps<{
   </div>
 </template>
 
+
 <style scoped>
 .table-container {
   width: 100%;
@@ -69,6 +70,7 @@ defineProps<{
   font-size: 14px;
 }
 
+/* Стили заголовков (шапка) */
 .base-dynamic-table th {
   position: sticky;
   top: 0;
@@ -77,31 +79,48 @@ defineProps<{
   color: var(--color-text-secondary);
   font-weight: 600;
   padding: var(--spacing-sm) var(--spacing-md);
+  /* Четкая нижняя и боковые границы для ячеек шапки */
   border-bottom: 2px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-  
 }
 
+/* Убираем крайнюю правую границу у последнего заголовка */
+.base-dynamic-table th:last-child {
+  border-right: none;
+}
+
+/* Стили обычных ячеек данных */
 .base-dynamic-table td {
   padding: var(--spacing-sm) var(--spacing-md);
+  /* Четкая нижняя и боковые границы для ячеек тела */
   border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   color: var(--color-text);
 }
 
+/* Убираем крайнюю правую границу у последних ячеек в строках */
+.base-dynamic-table td:last-child {
+  border-right: none;
+}
+
+/* Подсветка строки при наведении */
 .base-dynamic-table tr:hover td {
   background: var(--color-bg-tertiary);
 }
 
+/* Для последней строки убираем только нижнюю границу ячеек */
 .base-dynamic-table tr:last-child td {
   border-bottom: none;
 }
 
+/* Специфичный стиль для пустой ячейки (без боковых границ) */
 .empty-cell {
   text-align: center;
   color: var(--color-text-muted);
   padding: var(--spacing-lg) 0;
   font-style: italic;
+  border-right: none !important;
 }
 
 @media (max-width: 768px) {
@@ -111,7 +130,6 @@ defineProps<{
 
   .base-dynamic-table th,
   .base-dynamic-table td {
-  
     padding: var(--spacing-xs, 6px) var(--spacing-sm, 8px); 
   }
 

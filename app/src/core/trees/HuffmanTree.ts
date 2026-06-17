@@ -19,8 +19,7 @@ export class HuffmanTree extends Tree {
             queue.add({node: node, weight: count})
         }
         
-        while (queue.size !== 1) {
-            console.log(queue.list)
+        while (queue.size !== 1) {        
             let first = queue.poll()!
             let second = queue.poll()!
 
