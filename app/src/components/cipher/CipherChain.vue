@@ -48,7 +48,7 @@ const addStep = async () => {
 }
 
 const finalOutput = computed(() => 
-  store.steps.length > 0 ? store.steps[store.steps.length - 1].output : null
+  store.steps.length > 0 ? store.steps[store.steps.length - 1].output?.replaceAll(' ', '_') : null
 )
 </script>
 

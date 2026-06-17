@@ -14,6 +14,10 @@ const store = useCipherStore()
 const originalKey = computed(() => store.keys.find(k => k.id === props.step.keyId))
 const isKeyEmpty = computed(() => !originalKey.value?.value?.trim())
 
+const output = computed(() => (step: Step) => {
+  return step.output ? step.output.replaceAll(' ', '_') : '';
+})
+
 const getCipherLabel = (t: CipherType) => t === 'vigenere' ? 'Смещение' : 'Перестановка'
 const getModeLabel = (m: CipherMode) => m === 'encrypt' ? 'Зашифровать' : 'Расшифровать'
 </script>
@@ -56,7 +60,7 @@ const getModeLabel = (m: CipherMode) => m === 'encrypt' ? 'Зашифроват�
         <code v-if="step.isLoading" class="mono flow-value loading">Обработка...</code>
         <code v-else-if="isKeyEmpty" class="mono flow-value loading">-</code>
         <code v-else-if="step.error" class="mono flow-value error" :title="step.error ?? undefined">Ошибка</code>
-        <code v-else class="mono flow-value success">{{ step.output || '—' }}</code>
+        <code v-else class="mono flow-value success">{{ output(step) || '—' }}</code>
       </div>
     </div>
 
