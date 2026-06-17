@@ -35,8 +35,16 @@ export const useCompressionStore = defineStore('compression', {
     },
 
     formattedCodesString(): string {
-      return this.currentSteps.map((step: { stringCode: any }) => step.stringCode).join(', ')
+    return this.currentSteps
+        .map((step: { stringCode: any }) => step.stringCode)
+        .filter((code: any) => {
+        if (typeof code !== 'string') return true;
+        const trimmed = code.trim();
+        return trimmed !== '' && trimmed !== '-';
+        })
+        .join(', ');
     },
+
 
     currentDictionaryLength(): number {
       const steps = this.currentSteps;

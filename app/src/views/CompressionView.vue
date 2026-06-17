@@ -12,6 +12,8 @@ import DataTable from '../components/ui/DataTable.vue'
 import ExpandableCell from '../components/ui/ExpandableCell.vue'
 import CopyButton from '../components/ui/CopyButton.vue'
 import MassCodeInput from '../components/compression/MassCodeInput.vue'
+import type { LZWStep } from '../core/compression/lzw.ts'
+import type { LZ78Step } from '../core/compression/lz78.ts'
 
 const settings = useSettingsStore()
 const compression = useCompressionStore()
@@ -85,7 +87,7 @@ const tableConfig = computed<TableConfig>(() => {
         { key: 'dictLast', title: 'Словарь' },
         { key: 'stringCode', title: 'Код' }
       ]
-      data = steps.map((step: any, idx: number) => ({
+      data = steps.map((step: LZ78Step, idx: number) => ({
         ...step,
         index: idx,
         dictLast: step.dictionary[step.dictionary.length - 1] || '-',
@@ -99,9 +101,9 @@ const tableConfig = computed<TableConfig>(() => {
         { key: 'dictLast', title: 'Словарь' },
         { key: 'stringCode', title: 'Код' }
       ]        
-      data = steps.map((step: any, idx: number) => ({
+      data = steps.map((step: LZWStep, idx: number) => ({
         ...step,
-        dictLast: step.dictionary[step.dictionary.length - 1] || '-',
+        dictLast: step.dictionary[step.stepIndex - 1] || '-',
         _arrayIndex: idx
       }))
       break

@@ -64,7 +64,7 @@ export function lz77Compress(inputText: string): LZ77Step[] {
 
     const nextCharPosition = currentPosition + maxMatchLength;
     const nextChar = nextCharPosition < textLength ? inputText[nextCharPosition] : '';
-    const calculatedOffset = dictionaryLength - bestMatchIndex - 1;
+    const calculatedOffset = maxMatchLength === 0 ? 0 : dictionaryLength - bestMatchIndex - 1;
 
     steps.push({
       dictionary,
