@@ -53,7 +53,7 @@ defineProps<{
 <style scoped>
 .table-container {
   width: 100%;
-  max-height: 380px; 
+  max-height: 840px; 
   overflow-x: auto;
   overflow-y: auto;
   padding-right: 4px;
