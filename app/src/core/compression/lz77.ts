@@ -58,7 +58,7 @@ export function lz77Compress(inputText: string): LZ77Step[] {
       }
     }
 
-    if (currentPosition + maxMatchLength + 1 >= textLength) {
+    if (currentPosition + maxMatchLength >= textLength) {
       maxMatchLength -= 1;
     }
 
