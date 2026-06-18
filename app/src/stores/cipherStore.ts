@@ -42,6 +42,9 @@ export const useCipherStore = defineStore('cipher', {
     },
 
     async updateKey(id: string, newValue: string) {
+
+      
+
       const keyObj = this.keys.find(k => k.id === id)
       if (!keyObj) return
       
@@ -54,10 +57,7 @@ export const useCipherStore = defineStore('cipher', {
         }
       })
 
-      const firstAffectedIndex = this.steps.findIndex(step => step.id === id)
-      if (firstAffectedIndex !== -1) {
-        await this.recalculateFrom(firstAffectedIndex)
-      }
+      await this.recalculateFrom(0)
     },
 
     addStep(type: CipherType, mode: CipherMode, id: string, input?: string) {
