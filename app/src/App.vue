@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Header from './components/layout/Header.vue';
-import MobileNav from './components/layout/MobileNav.vue'; // Импортируем нашу мобильную панель
+import MobileNav from './components/layout/MobileNav.vue';
 </script>
 
 <template>
@@ -8,7 +8,11 @@ import MobileNav from './components/layout/MobileNav.vue'; // Импортиру
     <Header />
     
     <main class="app-main">
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <Transition name="fade-pure" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </RouterView>
     </main>
 
     <MobileNav /> 
@@ -29,6 +33,8 @@ import MobileNav from './components/layout/MobileNav.vue'; // Импортиру
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+  /* Важно: предотвращает горизонтальные полосы прокрутки при анимации */
+  overflow-x: hidden; 
 }
 
 @media (max-width: 768px) {
@@ -43,5 +49,16 @@ import MobileNav from './components/layout/MobileNav.vue'; // Импортиру
     padding: var(--spacing-sm);
     padding-bottom: calc(85px + env(safe-area-inset-bottom, 0)) !important;
   }
+}
+
+.fade-pure-enter-from,
+.fade-pure-leave-to {
+  opacity: 0;
+}
+.fade-pure-enter-active {
+  transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.fade-pure-leave-active {
+  transition: opacity 0.15s cubic-bezier(0.25, 1, 0.5, 1);
 }
 </style>
