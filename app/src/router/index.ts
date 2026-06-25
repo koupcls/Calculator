@@ -3,13 +3,15 @@ import TreesView from '../views/TreesView.vue';
 import CipherView from '../views/CipherView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
 import CompressionView from '../views/CompressionView.vue';
+import HomeView from '../views/HomeView.vue';
 
 export const router = createRouter({
   history: createWebHashHistory('/Calculator/'),
   routes: [
     {
       path: '/',
-      redirect: '/trees'
+      name: 'Home',
+      component: HomeView
     },
     {
       path: '/trees',
