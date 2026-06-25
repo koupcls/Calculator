@@ -16,7 +16,7 @@ const activeTab = ref<'huffman' | 'shannon'>('huffman')
 const tabs = [
   { id: 'huffman' as const, label: 'Хаффман' },
   { id: 'shannon' as const, label: 'Шеннон-Фано' }
-]
+] 
 
 const columnsConfig = [
   { key: 'symbol', title: 'Символ', align: 'left' as const },
@@ -76,7 +76,7 @@ onUnmounted(() => debouncedAnalyze.cancel())
         </div>
         <Switcher
           v-model="treeStore.caseSensitive"
-          icon="Aa"
+          icon=""
           label="Учитывать регистр"
         />
       </div>
