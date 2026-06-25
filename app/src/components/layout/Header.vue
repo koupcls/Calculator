@@ -13,113 +13,152 @@ const tabs = [
 ]
 
 const currentPath = computed(() => route.path)
+const isHomePage = computed(() => route.path === '/')
+
 const navigate = (path: string) => router.push(path)
 </script>
 
 <template>
-  <header class="header">
-    <div class="header-content">
-      <div class="header-left" @click="navigate('/trees')">
-        <span class="title">Calculator</span>
-      </div>
+  <header class="header-wrapper">
+    <div class="header-glass">
+      <div class="header-content">
+        <!-- Логотип -->
+        <div class="header-left" @click="navigate('/')">
+          <span class="title">Calculator</span>
+        </div>
 
-      <nav class="desktop-nav">
-        <button
-          v-for="tab in tabs"
-          :key="tab.path"
-          class="nav-tab"
-          :class="{ active: currentPath === tab.path }"
-          @click="navigate(tab.path)"
-        >
-          {{ tab.label }}
-        </button>
-      </nav>
+        <!-- Навигация -->
+        <nav v-if="!isHomePage" class="desktop-nav">
+          <div class="nav-container">
+            <button
+              v-for="tab in tabs"
+              :key="tab.path"
+              class="nav-tab"
+              :class="{ active: currentPath === tab.path }"
+              @click="navigate(tab.path)"
+            >
+              {{ tab.label }}
+              <!-- Индикатор активной вкладки -->
+              <span v-if="currentPath === tab.path" class="active-indicator"></span>
+            </button>
+          </div>
+        </nav>
 
-      <div class="header-right">
-        <ThemeToggle />
+        <!-- Правая часть -->
+        <div class="header-right">
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <style scoped>
-.header {
+.header-wrapper {
   position: sticky;
-  top: var(--spacing-md, 16px); 
+  top: 8px;
   z-index: 100;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  margin: 0 var(--spacing-md);
-  transition: all var(--transition);
-  background: color-mix(in srgb, var(--color-bg-secondary) 85%, transparent);
-  backdrop-filter: blur(8px);
+  width: 100%;
+  padding: 0 var(--spacing-md);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.header-glass {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 1200px;
+  background: color-mix(in srgb, var(--color-bg-secondary) 75%, transparent);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+}
+
+.header-glass:hover {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.08);
 }
 
 .header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 12px var(--spacing-lg);
+  padding: 10px 16px;
   gap: var(--spacing-md);
 }
 
 .header-left {
+  display: flex;
+  align-items: center;
   cursor: pointer;
   flex-shrink: 0;
 }
 
-.title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text);
-  letter-spacing: -0.5px;
-  transition: opacity var(--transition);
-  user-select: none;
+.header-left:hover .title {
+  transform: scale(1.05);
 }
 
-.title:hover {
-  opacity: 0.7;
+.title {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+  color: var(--color-text);
+  user-select: none;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .desktop-nav {
-  display: flex;
-  gap: 6px;
-  background: var(--color-bg);
-  padding: 4px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
   flex: 1;
+  display: flex;
   justify-content: center;
-  max-width: 600px;
+}
+
+.nav-container {
+  display: flex;
+  gap: 4px;
+  background: color-mix(in srgb, var(--color-bg-secondary) 50%, transparent);
+  padding: 4px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 30%, transparent);
 }
 
 .nav-tab {
+  position: relative;
   padding: 8px 20px;
   font-family: var(--font-sans);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-secondary);
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
 
 .nav-tab:hover {
   color: var(--color-text);
-  background: var(--color-bg-tertiary);
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
 }
 
 .nav-tab.active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.active-indicator {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 4px;
   background: var(--color-primary);
-  color: #ffffff;
-  box-shadow: var(--shadow-sm);
 }
 
 .header-right {
@@ -128,36 +167,16 @@ const navigate = (path: string) => router.push(path)
   flex-shrink: 0;
 }
 
-@media (min-width: 1400px) {
-  .header {
-    margin: 0;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    border-radius: var(--radius-md);
-  }
-  
-  .header-content {
-    padding: 12px var(--spacing-xl);
-  }
-}
-
 @media (max-width: 768px) {
+.header-wrapper {
+    padding: 0 0;
+    top: 0px;
+  }
+  .header-glass{
+    border-radius: 0px;
+  }
   .desktop-nav {
     display: none;
-  }
-
-  .header {
-    top: 0;
-    margin: 0;
-    border-radius: var(--radius-md);
-    border-left: none;
-    border-right: none;
-    border-top: none;
-  }
-
-  .header-content {
-    padding: 12px var(--spacing-md);
   }
 }
 </style>

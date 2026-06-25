@@ -12,7 +12,8 @@ const tabs = [
   { path: '/compression', label: 'Сжатие' }
 ]
 
-// Определяем текущую вкладку
+const isHomePage = computed(() => route.path === '/')
+
 const currentTab = computed(() => {
   return tabs.find(tab => tab.path === route.path) || tabs[0]
 })
@@ -25,17 +26,21 @@ const navigate = (path: string) => {
   router.push(path)
   isOpen.value = false
 }
+
+const goHome = () => {
+  router.push('/')
+  isOpen.value = false
+}
 </script>
 
 <template>
-  <div class="mobile-nav-container">
+  <div v-if="!isHomePage" class="mobile-nav-container">
     <Transition name="fade">
       <div v-if="isOpen" class="nav-overlay" @click="isOpen = false"></div>
     </Transition>
 
-    <div class="nav-popup" :class="{ 'is-open': isOpen }">
-      <div class="popup-header">Выберите раздел</div>
-      <div class="popup-list">
+    <Transition name="slide-up">
+      <div v-if="isOpen" class="nav-popup">
         <button
           v-for="tab in tabs"
           :key="tab.path"
@@ -47,16 +52,23 @@ const navigate = (path: string) => {
           <span v-if="currentTab.path === tab.path" class="checkmark">✓</span>
         </button>
       </div>
-    </div>
+    </Transition>
 
-    <nav class="mobile-bottom-nav" @click="toggleMenu">
-      <div class="current-info">
+    <div class="floating-controls">
+      <button class="control-btn btn-home" @click="goHome">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </button>
+
+      <button class="control-btn btn-pill" @click="toggleMenu">
         <span class="current-label">{{ currentTab.label }}</span>
         <span class="arrow-icon" :class="{ rotated: isOpen }">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
         </span>
-      </div>
-    </nav>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -68,46 +80,89 @@ const navigate = (path: string) => {
 @media (max-width: 768px) {
   .mobile-nav-container {
     display: block;
-    height: calc(56px + env(safe-area-inset-bottom, 0));
+    height: calc(72px + env(safe-area-inset-bottom, 0));
   }
+
   .nav-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 30px;
-    background: rgba(0, 0, 0, 0.4);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     z-index: 99;
+  }
+
+  /* Плавающий контейнер кнопок */
+  .floating-controls {
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 101;
+  }
+
+  /* Общий стиль для кнопок-островов */
+  .control-btn {
+    background: color-mix(in srgb, var(--color-bg-secondary) 85%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .control-btn:active {
+    transform: scale(0.96);
+    background: var(--color-bg-tertiary);
+  }
+
+  .btn-home {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .btn-pill {
+    min-width: 220px;
+    height: 52px;
+    padding: 0 24px;
+    border-radius: 26px;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .arrow-icon {
+    display: flex;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .arrow-icon.rotated {
+    transform: rotate(180deg);
   }
 
   .nav-popup {
     position: fixed;
-    bottom: 30px;
-    left: 0;
-    right: 0;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0));
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 48px);
+    max-width: 320px;
     background: var(--color-bg-secondary);
-    border-radius: 16px 16px 0 0;
-    border-top: 1px solid var(--color-border);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 8px;
     z-index: 100;
-    padding: 16px 16px calc(75px + env(safe-area-inset-bottom, 0)) 16px;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  }
-
-  .nav-popup.is-open {
-    transform: translateY(0);
-  }
-
-  .popup-header {
-    font-size: 13px;
-    color: var(--color-text-muted);
-    text-align: center;
-    margin-bottom: 12px;
-    font-weight: 500;
-  }
-
-  .popup-list {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -120,17 +175,16 @@ const navigate = (path: string) => {
     padding: 14px 16px;
     background: transparent;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     color: var(--color-text);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
-    text-align: left;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
 
   .popup-item:active {
-    background: color-mix(in srgb, var(--color-border) 50%, transparent);
+    background: var(--color-bg-tertiary);
   }
 
   .popup-item.active {
@@ -140,48 +194,18 @@ const navigate = (path: string) => {
 
   .checkmark {
     font-weight: bold;
-    font-size: 18px;
-  }
-
-  .mobile-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    background: color-mix(in srgb, var(--color-bg-secondary) 90%, transparent);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--color-border);
-    z-index: 101;
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .current-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--color-primary);
-    font-weight: 600;
     font-size: 16px;
   }
 
-  .arrow-icon {
-    display: flex;
-    align-items: center;
-    transition: transform 0.2s ease;
-  }
-
-  .arrow-icon.rotated {
-    transform: rotate(180deg);
-  }
-
-  /* Анимация плавного появления оверлея */
   .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
   .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+  .slide-up-enter-active, .slide-up-leave-active { 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  }
+  .slide-up-enter-from, .slide-up-leave-to { 
+    opacity: 0;
+    transform: translate(-50%, 20px) scale(0.95);
+  }
 }
 </style>
