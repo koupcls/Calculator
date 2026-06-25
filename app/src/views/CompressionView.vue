@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSettingsStore } from '../stores/compression/useSettingsStore.ts'
 import { useCompressionStore } from '../stores/compression/useCompressionStore.ts'
 import { useDecompressionStore } from '../stores/compression/useDecompressionStore.ts'
@@ -14,6 +14,7 @@ import CopyButton from '../components/ui/CopyButton.vue'
 import MassCodeInput from '../components/compression/MassCodeInput.vue'
 import type { LZWStep } from '../core/compression/lzw.ts'
 import type { LZ78Step } from '../core/compression/lz78.ts'
+import { formateSpaces } from '../core/utils/spaceFormaters.ts'
 
 const settings = useSettingsStore()
 const compression = useCompressionStore()
@@ -23,13 +24,19 @@ const currentSteps = computed(() =>
   settings.mode === 'compress' ? compression.currentSteps : decompression.currentSteps
 )
 
-const formattedCodesString = computed(() => 
-  settings.mode === 'compress' ? compression.formattedCodesString : decompression.formattedCodesString
-)
-
 const currentError = computed(() => 
   settings.mode === 'compress' ? compression.error : decompression.error
 )
+
+const showSpaces = ref(true)
+
+function formateSpacesWrapper(input: string, isCode: boolean = false): string {
+  if (showSpaces.value) {
+    if (isCode) return formateSpaces(input, '\' \'')
+    else return formateSpaces(input)
+  }
+  return input
+}
 
 const modes = [
   { id: 'compress', label: 'Сжатие' },
@@ -68,7 +75,6 @@ const tableConfig = computed<TableConfig>(() => {
     case 'lz77':
     case 'lzss':
       columns = [
-        { key: 'index', title: 'Шаг', align: 'center' },
         { key: 'dictionary', title: 'Словарь' },
         { key: 'input', title: 'Вход' },
         { key: 'stringCode', title: 'Код' }
@@ -159,7 +165,7 @@ const tableConfig = computed<TableConfig>(() => {
           v-model="settings.caseSensitive" 
           @update:modelValue="compression.process()"
           label="Учитывать регистр" 
-          icon="Aa"
+          icon=""
         />
       </div>
 
@@ -180,9 +186,12 @@ const tableConfig = computed<TableConfig>(() => {
           <span>Таблица шагов</span>
         </div>
         <div v-if="currentError" class="error-msg">{{ currentError }}</div>
-        <CopyButton 
-          v-if="formattedCodesString && settings.mode === 'compress'" 
-          :text="formattedCodesString" 
+
+        <Switcher
+          v-model="showSpaces" 
+          @update:modelValue=""
+          label="Выделять пробелы" 
+          icon=""
         />
       </div>
       
@@ -200,12 +209,12 @@ const tableConfig = computed<TableConfig>(() => {
         </template>
 
         <template #dictionary="{ value }">
-          <ExpandableCell v-if="value !== '-'" :text="value" />
+          <ExpandableCell v-if="value !== '-'" :text="formateSpacesWrapper(value)" />
           <span v-else class="empty-cell">{{ value }}</span>
         </template>
 
         <template #input="{ value }">
-          <ExpandableCell v-if="value !== '-'" :text="value" />
+          <ExpandableCell v-if="value !== '-'" :text="formateSpacesWrapper(value)" />
           <span v-else class="empty-cell">{{ value }}</span>
         </template>
 
@@ -215,16 +224,16 @@ const tableConfig = computed<TableConfig>(() => {
         </template>
 
         <template #stringCode="{ value }">
-          <span class="step-num">{{ value || '-' }}</span>
+          <span class="step-num">{{ formateSpacesWrapper(value, true) }}</span>
         </template>
       </DataTable>
 
       <div v-else class="empty-state">
-        <p>{{ settings.mode === 'compress' ? 'Введите строку для мгновенного расчета всех алгоритмов сжатия' : 'Введите коды в поле выше для отображения шагов расшифровки' }}</p>
+        <p>{{ settings.mode === 'compress' ? 'Введите строку для расчета алгоритмов сжатия' : 'Введите коды для отображения шагов расшифровки' }}</p>
       </div>
     </div>
 
-    <div v-if="settings.mode === 'decompress'" class="section">
+    <div class="section">
       <div class="section-header">
         <div class="section-title">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -234,22 +243,34 @@ const tableConfig = computed<TableConfig>(() => {
             <line x1="16" y1="17" x2="8" y2="17"/>
             <polyline points="10 9 9 9 8 9"/>
           </svg>
-          <span>Итоговый текст</span>
+          <span v-if="settings.mode === 'compress'">Итоговые коды</span>
+          <span v-else>Итоговый текст</span>
         </div>
         
         <CopyButton 
-          v-if="decompression.decompressedText" 
-          :text="decompression.decompressedText" 
+          v-if="(settings.mode === 'compress' && compression.formattedCodesString) || (settings.mode === 'decompress' && decompression.decompressedText)" 
+          :text="settings.mode === 'compress' ? compression.formattedCodesString : decompression.decompressedText" 
         />
       </div>
       
       <div class="result-box">
-        <template v-if="decompression.decompressedText">
-          <span class="result-text">{{ decompression.decompressedText }}</span>
+        <div v-if="settings.mode === 'compress'">
+          <template v-if="compression.formattedCodesString">
+            <span class="result-text">{{ formateSpacesWrapper(compression.formattedCodesString, true) }}</span>
+          </template>
+          <template v-else>
+            <span class="empty-text">Введите текст для получения результата...</span>
+          </template>
+        </div>
+
+        <div v-else>
+          <template v-if="decompression.decompressedText">
+          <span class="result-text">{{ formateSpacesWrapper(decompression.decompressedText) }}</span>
         </template>
         <template v-else>
           <span class="empty-text">Введите коды для получения результата...</span>
         </template>
+        </div>
       </div>
     </div>
   </div>

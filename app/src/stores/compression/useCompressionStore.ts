@@ -39,8 +39,7 @@ export const useCompressionStore = defineStore('compression', {
         .map((step: { stringCode: any }) => step.stringCode)
         .filter((code: any) => {
         if (typeof code !== 'string') return true;
-        const trimmed = code.trim();
-        return trimmed !== '' && trimmed !== '-';
+        return true
         })
         .join(', ');
     },

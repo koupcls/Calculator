@@ -1,11 +1,13 @@
+import { unformateSpaces } from "../utils/spaceFormaters"
+
 export const parseMassInput = (text: string, algorithm: string): any[] => {
   let str = text.trim()
   const result: any[] = []
 
   while (str.length > 0) {
-    // Удаляем ведущие запятые и пробелы перед кодом
     str = str.replace(/^[\s,]+/, '')
     if (str.length === 0) break
+    str = unformateSpaces(str, '\'_\'')
 
     // LZ77: <offset, length, 'char'>
     if (algorithm === 'lz77') {
