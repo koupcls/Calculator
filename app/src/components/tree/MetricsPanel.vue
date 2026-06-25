@@ -12,35 +12,38 @@ defineProps<Props>()
 </script>
 
 <template>
-  <div v-if="store.isAnalyzed" class="metrics-panel">
-    <!-- Верхний блок: Общие метрики -->
-    <div class="metrics-group">
-      <h4>Метрики источника</h4>
-      <div class="formulas-row">
-        <span class="formula-item">n = {{ store.metrics?.n }}</span>
-        <span class="formula-item">m = {{ store.metrics?.m }}</span>
-        <span class="formula-item">E = {{ store.metrics?.entropy?.toFixed(4) }}</span>
-        <span class="formula-item">H₀ = {{ store.metrics?.H_max?.toFixed(4) }}</span>
-        <span class="formula-item">R = {{ store.metrics?.R?.toFixed(4) }}</span>
-        <span class="formula-item">r₀ = {{ store.metrics?.r0?.toFixed(4) }}</span>
+  <div class="metrics-panel" v-if="store.isAnalyzed">
+    <template>
+      <div class="metrics-group">
+        <h4>Метрики источника</h4>
+        <div class="formulas-row">
+          <span class="formula-item">n = {{ store.metrics?.n }}</span>
+          <span class="formula-item">m = {{ store.metrics?.m }}</span>
+          <span class="formula-item">E = {{ store.metrics?.entropy?.toFixed(4) }}</span>
+          <span class="formula-item">H₀ = {{ store.metrics?.H_max?.toFixed(4) }}</span>
+          <span class="formula-item">R = {{ store.metrics?.R?.toFixed(4) }}</span>
+          <span class="formula-item">r₀ = {{ store.metrics?.r0?.toFixed(4) }}</span>
+        </div>
+        <div class="formula mono">{{ store.entropyFormula }}</div>
+        <div class="formula mono">{{ store.maxEntropyFormula }}</div>
+        <div class="formula mono">{{ store.redundancyFormula }}</div>
+        <div class="formula mono">{{ store.relativeRedundancyFormula }}</div>
       </div>
-      <div class="formula mono">{{ store.entropyFormula }}</div>
-      <div class="formula mono">{{ store.maxEntropyFormula }}</div>
-      <div class="formula mono">{{ store.redundancyFormula }}</div>
-      <div class="formula mono">{{ store.relativeRedundancyFormula }}</div>
-    </div>
 
-    <!-- Нижний блок: Метрики конкретного алгоритма -->
-    <div class="metrics-group">
+      <div class="metrics-group">
         <h4>{{ activeTab === 'huffman' ? 'Эффективность Хаффмана' : 'Эффективность Шеннона-Фано' }}</h4>
         <div class="formulas-row">
-            <span class="formula-item">M = {{ activeTab === 'huffman' ? store.huffman?.expectedLength?.toFixed(4) : store.shannonFano?.expectedLength?.toFixed(4)  }}</span>
+          <span class="formula-item">M = {{ activeTab === 'huffman' ? store.huffman?.expectedLength?.toFixed(4) : store.shannonFano?.expectedLength?.toFixed(4)  }}</span>
         </div>
-      <div class="formula mono">
-        {{ activeTab === 'huffman' ? store.huffmanMeanFormula : store.shannonMeanFormula }}
+        <div class="formula mono">
+          {{ activeTab === 'huffman' ? store.huffmanMeanFormula : store.shannonMeanFormula }}
+        </div>
       </div>
-    </div>
+    </template>
   </div>
+    <div v-else class="empty-state">
+      <p>Введите текст, чтобы рассчитать числовые характеристики</p>
+    </div>
 </template>
 
 <style scoped>
@@ -96,5 +99,20 @@ h4 {
   white-space: pre-wrap;
   word-break: break-all;
   padding: var(--spacing-xs) 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-lg) var(--spacing-md);
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
 }
 </style>

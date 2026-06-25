@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { useSettingsStore } from '../../stores/compression/useSettingsStore'
 import { useDecompressionStore } from '../../stores/compression/useDecompressionStore'
 import { parseMassInput } from '../../core/compression/codesParser'
+import Textarea from '../ui/Textarea.vue'
 
 const settings = useSettingsStore()
 const decompression = useDecompressionStore()
@@ -32,35 +33,16 @@ const inputPlaceholder = computed(() => {
 
 <template>
   <div class="mass-input-wrapper">
-    <textarea
+    <Textarea
       v-model="rawInput"
       @input="handleInput"
-      class="mass-textarea"
       :placeholder="inputPlaceholder"
-      rows="3"
-    ></textarea>
+    />
   </div>
 </template>
 
 <style scoped>
 .mass-input-wrapper {
   width: 100%;
-}
-.mass-textarea {
-  width: 100%;
-  font-family: var(--font-mono, monospace);
-  font-size: 14px;
-  padding: var(--spacing-sm, 10px);
-  background: var(--color-bg, #ffffff);
-  color: var(--color-text, #000000);
-  border: 1px solid var(--color-border, #ccc);
-  border-radius: var(--radius-md, 6px);
-  outline: none;
-  resize: vertical;
-  line-height: 1.4;
-  transition: border-color 0.2s ease;
-}
-.mass-textarea:focus {
-  border-color: var(--color-primary, #4f46e5);
 }
 </style>

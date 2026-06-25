@@ -40,22 +40,23 @@ const value = computed({
 
 .textarea {
   width: 100%;
-  padding: var(--spacing-md);
-  font-family: var(--font-mono);
+  font-family: var(--font-mono, monospace);
   font-size: 14px;
-  line-height: 1.6;
-  color: var(--color-text);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  padding: var(--spacing-sm, 10px);
+  background: var(--color-bg, #ffffff);
+  color: var(--color-text, #000000);
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: var(--radius-md, 6px);
+  outline: none;
   resize: vertical;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  line-height: 1.4;
+  transition: border-color 0.2s ease;
 }
 
 .textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-color: var(--color-primary, #4f46e5);
 }
 
 .textarea--error {
