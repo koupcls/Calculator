@@ -67,7 +67,6 @@ const isChecked = computed({
 
 .switcher.is-active {
   color: var(--color-text);
-  border-color: var(--color-primary);
 }
 
 .switch-box {
